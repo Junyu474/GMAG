@@ -2,6 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 import warnings
 
+
 @dataclass
 class Galaxy:
     """Galaxy class"""
