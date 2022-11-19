@@ -6,6 +6,15 @@ import requests
 def get_random_galaxy():
     """"""
 
+    # Get random galaxy objid
+    objid = __get_random_galaxy_objid()
+    # Get imaging data
+    imaging_data = __get_galaxy_imaging_data(objid)
+    # Construct url
+    url = __get_galaxy_image_url(**imaging_data)
+
+    # TODO: process image data
+
     # Create galaxy instance
     galaxy = Galaxy()
 
@@ -27,8 +36,8 @@ def __get_random_field():
         dec = np.random.randint(-30, 80)
 
         if (50 < dec < 90 and 0 < ra < 20) or \
-           (-30 < dec < -10 and 140 < ra < 160) or \
-           (70 < dec < 90 and 200 < ra < 220):
+                (-30 < dec < -10 and 140 < ra < 160) or \
+                (70 < dec < 90 and 200 < ra < 220):
             continue
         else:
             return ra, ra + 10, dec, dec + 10
@@ -58,3 +67,23 @@ def __get_galaxy_imaging_data(objid):
                        f"WHERE objid = {objid}")
 
     return req.json()[0]['Rows'][0]
+
+
+def __get_galaxy_image_url(run, camcol, field, band=None):
+    """Get url for galaxy image
+    if given band, return fits file url for that band
+    if not, return irg jpg file url
+    """
+
+    if band is None:
+        return f"https://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
+               f"{run}/{camcol}/frame-irg-{run:06d}-{camcol}-{field:04d}.jpg"
+
+    band = band.lower()
+    if band in ['u', 'g', 'r', 'i', 'z']:
+        return f"https://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
+               f"{run}/{camcol}/frame-{band}-{run:06d}-{camcol}-{field:04d}.fits.bz2"
+    else:
+        raise ValueError(f"Band must be one of u,g,r,u,z, not {band}")
+
+
