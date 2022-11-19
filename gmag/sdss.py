@@ -29,6 +29,10 @@ def __get_random_field():
         3. Dec in [-30, -10] and RA in [140, 160]
         4. Dec in [70, 90] and RA in [200, 220]
     """
+    # note: still cant guarantee the field can hit a galaxy
+    # but this 10x10 deg size has a small enough request time (~1s)
+    # increase field size to 20x20 will increase request time to ~10s
+    # current solution is to handled in __get_random_galaxy_objid
 
     # Start from region excluding field 1, then check for 2,3,4
     while True:
@@ -46,16 +50,21 @@ def __get_random_field():
 def __get_random_galaxy_objid():
     """Request random galaxy from SDSS in a random field"""
 
-    # Get random field
-    ra_min, ra_max, dec_min, dec_max = __get_random_field()
+    # random field could potentially not have a galaxy, try again if so
+    while True:
+        # Get random field
+        ra_min, ra_max, dec_min, dec_max = __get_random_field()
 
-    # Get random objid
-    req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                       f"SELECT TOP 1 g.objid FROM Galaxy AS g "
-                       f"WHERE g.ra BETWEEN {ra_min} AND {ra_max} AND g.dec BETWEEN {dec_min} AND {dec_max} "
-                       f"ORDER BY NEWID()")
+        # Get random objid
+        req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+                           f"SELECT TOP 1 g.objid FROM Galaxy AS g "
+                           f"WHERE g.ra BETWEEN {ra_min} AND {ra_max} AND g.dec BETWEEN {dec_min} AND {dec_max} "
+                           f"ORDER BY NEWID()")
 
-    return req.json()[0]['Rows'][0]['objid']
+        if len(req.json()[0]['Rows']) == 0:
+            continue
+
+        return req.json()[0]['Rows'][0]['objid']
 
 
 def __get_galaxy_imaging_data(objid):
