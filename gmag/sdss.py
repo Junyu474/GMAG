@@ -47,3 +47,14 @@ def __get_random_galaxy_objid():
                        f"ORDER BY NEWID()")
 
     return req.json()[0]['Rows'][0]['objid']
+
+
+def __get_galaxy_imaging_data(objid):
+    """Get imaging data (run, camcol, field) for a given galaxy objid"""
+
+    # Get imaging data
+    req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+                       f"SELECT run, camcol, field FROM Galaxy "
+                       f"WHERE objid = {objid}")
+
+    return req.json()[0]['Rows'][0]
