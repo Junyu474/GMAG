@@ -1,10 +1,12 @@
-from .galaxy import Galaxy
+import warnings
+
 import numpy as np
 import requests
+from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.wcs import WCS, FITSFixedWarning
-from astropy.coordinates import SkyCoord
-import warnings
+
+from .galaxy import Galaxy
 
 
 def get_random_galaxy():
@@ -12,6 +14,7 @@ def get_random_galaxy():
 
     # Get a random galaxy objid
     objid = __get_random_galaxy_objid()
+    print(f"objid: {objid}")
     # Get imaging data
     imaging_data = __get_galaxy_imaging_data(objid)
     # Get jpg image
@@ -28,29 +31,25 @@ def get_random_galaxy():
 
 
 def __get_random_field():
-    """Return random ra and dec (10 deg range, integer)
+    """Return random ra and dec (20 deg range, integer)
     need to exclude these fields:
         1. Dec in [-90, -30] for any RA
         2. Dec in [50, 90] and RA in [0, 20]
         3. Dec in [-30, -10] and RA in [140, 160]
         4. Dec in [70, 90] and RA in [200, 220]
     """
-    # note: still cant guarantee the field can hit a galaxy
-    # but this 10x10 deg size has a small enough request time (~1s)
-    # increase field size to 20x20 will increase request time to ~10s
-    # current solution is to handled in __get_random_galaxy_objid
 
     # Start from region excluding field 1, then check for 2,3,4
     while True:
-        ra = np.random.randint(0, 350)
-        dec = np.random.randint(-30, 80)
+        ra = np.random.randint(0, 340)
+        dec = np.random.randint(-30, 70)
 
         if (50 < dec < 90 and 0 < ra < 20) or \
                 (-30 < dec < -10 and 140 < ra < 160) or \
                 (70 < dec < 90 and 200 < ra < 220):
             continue
         else:
-            return ra, ra + 10, dec, dec + 10
+            return ra, ra + 20, dec, dec + 20
 
 
 def __get_random_galaxy_objid():
@@ -64,7 +63,9 @@ def __get_random_galaxy_objid():
         # Get random objid
         req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
                            f"SELECT TOP 1 g.objid FROM Galaxy AS g "
+                           f"JOIN ZooNoSpec as z ON g.objid = z.objid "
                            f"WHERE g.ra BETWEEN {ra_min} AND {ra_max} AND g.dec BETWEEN {dec_min} AND {dec_max} "
+                           f"AND g.clean = 1"
                            f"ORDER BY NEWID()")
 
         if len(req.json()[0]['Rows']) == 0:
@@ -99,7 +100,7 @@ def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
     # TODO: make this async
 
     cutout_images = []
-    r = petroRad_r/3600  # convert to deg
+    r = petroRad_r / 3600  # convert to deg
 
     for band in ['u', 'g', 'r', 'i', 'z']:
         url = f"https://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
