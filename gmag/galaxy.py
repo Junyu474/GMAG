@@ -6,11 +6,11 @@ import warnings
 @dataclass
 class Galaxy:
     """Galaxy class"""
-    u: np.ndarray = np.empty(0)
-    g: np.ndarray = np.empty(0)
-    r: np.ndarray = np.empty(0)
-    i: np.ndarray = np.empty(0)
-    z: np.ndarray = np.empty(0)
+    _u: np.ndarray = np.empty(0)
+    _g: np.ndarray = np.empty(0)
+    _r: np.ndarray = np.empty(0)
+    _i: np.ndarray = np.empty(0)
+    _z: np.ndarray = np.empty(0)
 
     _name: str = ""
     redshift: float = 0.0
@@ -39,4 +39,10 @@ class Galaxy:
 
     @property
     def data(self):
-        return np.array([self.u, self.g, self.r, self.i, self.z])
+        """Return the data of the galaxy"""
+        return self._u, self._g, self._r, self._i, self._z
+
+    @data.setter
+    def data(self, data):
+        """Set the data of the galaxy"""
+        self._u, self._g, self._r, self._i, self._z = data
