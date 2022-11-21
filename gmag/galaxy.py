@@ -11,6 +11,7 @@ class Galaxy:
     _r: np.ndarray = np.empty(0)
     _i: np.ndarray = np.empty(0)
     _z: np.ndarray = np.empty(0)
+    _jpg_data: np.ndarray = np.empty(0)
 
     _name: str = ""
     redshift: float = 0.0
@@ -46,3 +47,13 @@ class Galaxy:
     def data(self, data):
         """Set the data of the galaxy"""
         self._u, self._g, self._r, self._i, self._z = data
+
+    @property
+    def jpg_data(self):
+        """Return the jpg image of the galaxy"""
+        return self._jpg_data
+
+    @jpg_data.setter
+    def jpg_data(self, jpg):
+        """Set the jpg image of the galaxy"""
+        self._jpg_data = jpg

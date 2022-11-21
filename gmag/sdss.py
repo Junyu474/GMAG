@@ -1,7 +1,9 @@
 import warnings
+from urllib.request import urlopen
 
 import numpy as np
 import requests
+from PIL import Image
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.wcs import WCS, FITSFixedWarning
@@ -18,13 +20,13 @@ def get_random_galaxy():
     # Get imaging data
     imaging_data = __get_galaxy_imaging_data(objid)
     # Get jpg image
-    url = __get_galaxy_jpg_image(**imaging_data)
-    print(url)
+    jpg_data = __get_galaxy_jpg_image(imaging_data['ra'], imaging_data['dec'], imaging_data['petroRad_r'])
     # Get fits images data
     cutout_images = __get_galaxy_fits_images_data(**imaging_data)
 
     # Create galaxy instance
     galaxy = Galaxy()
+    galaxy.jpg_data = jpg_data
     galaxy.data = cutout_images
 
     return galaxy
@@ -44,7 +46,9 @@ def __get_random_galaxy_objid():
 
 
 def __get_galaxy_imaging_data(objid):
-    """Get imaging data (run, camcol, field, ra, dec, petroRad_r) for a given galaxy objid"""
+    """Get imaging data (run, camcol, field, ra, dec, petroRad_r) for a given galaxy objid
+    :param objid: galaxy ssds dr17 objid
+    """
 
     # Get imaging data
     req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
@@ -54,13 +58,24 @@ def __get_galaxy_imaging_data(objid):
     return req.json()[0]['Rows'][0]
 
 
-def __get_galaxy_jpg_image(run, camcol, field, ra, dec, petroRad_r):
-    """Get jpg image for a given galaxy imaging data"""
+def __get_galaxy_jpg_image(ra, dec, petroRad_r):
+    """Get jpg image for a given galaxy imaging data
+    :param ra: right ascension, in degrees
+    :param dec: declination, in degrees
+    :param petroRad_r: petroRad_r, in arcsec
+    """
 
-    # TODO: cutout image
+    # Compute scale, defined as "/pix
+    # Fix image size 2*1.25*radius arcsec
+    img_size = 256
+    scale = 2 * 1.25 * petroRad_r / img_size
 
-    return f"https://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
-           f"{run}/{camcol}/frame-irg-{run:06d}-{camcol}-{field:04d}.jpg"
+    url = f"https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?" \
+          f"ra={ra}&dec={dec}&scale={scale}&width={img_size}&height={img_size}"
+
+    # Read jpg image url into numpy array
+    jpg_data = np.asarray(Image.open(urlopen(url)))
+    return jpg_data
 
 
 def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
@@ -91,8 +106,6 @@ def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
         # radius is max of x and y, cutout radius is 1.25*radius rounded up to nearest 10
         radius = max(abs(x - x_edge), abs(y - y_edge))
         cutout_radius = int(np.ceil(1.25 * radius / 10) * 10)
-
-        print(f"cutout radius: {cutout_radius}")
 
         # Get cutout, indices in integer
         min_y, max_y = int(y - cutout_radius), int(y + cutout_radius)
