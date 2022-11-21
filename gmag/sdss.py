@@ -30,52 +30,21 @@ def get_random_galaxy():
     return galaxy
 
 
-def __get_random_field():
-    """Return random ra and dec (20 deg range, integer)
-    need to exclude these fields:
-        1. Dec in [-90, -30] for any RA
-        2. Dec in [50, 90] and RA in [0, 20]
-        3. Dec in [-30, -10] and RA in [140, 160]
-        4. Dec in [70, 90] and RA in [200, 220]
-    """
-
-    # Start from region excluding field 1, then check for 2,3,4
-    while True:
-        ra = np.random.randint(0, 340)
-        dec = np.random.randint(-30, 70)
-
-        if (50 < dec < 90 and 0 < ra < 20) or \
-                (-30 < dec < -10 and 140 < ra < 160) or \
-                (70 < dec < 90 and 200 < ra < 220):
-            continue
-        else:
-            return ra, ra + 20, dec, dec + 20
-
-
 def __get_random_galaxy_objid():
     """Request random galaxy from SDSS in a random field"""
 
-    # random field could potentially not have a galaxy, try again if so
-    while True:
-        # Get random field
-        ra_min, ra_max, dec_min, dec_max = __get_random_field()
+    # Get random objid
+    req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+                       f"SELECT TOP 1 g.objid FROM Galaxy AS g "
+                       f"JOIN ZooNoSpec as z ON g.objid = z.objid "
+                       f"WHERE g.clean = 1 AND g.petroRad_r>12 AND g.petroRadErr_r!=-1000 "
+                       f"ORDER BY NEWID()")
 
-        # Get random objid
-        req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                           f"SELECT TOP 1 g.objid FROM Galaxy AS g "
-                           f"JOIN ZooNoSpec as z ON g.objid = z.objid "
-                           f"WHERE g.ra BETWEEN {ra_min} AND {ra_max} AND g.dec BETWEEN {dec_min} AND {dec_max} "
-                           f"AND g.clean = 1"
-                           f"ORDER BY NEWID()")
-
-        if len(req.json()[0]['Rows']) == 0:
-            continue
-
-        return req.json()[0]['Rows'][0]['objid']
+    return req.json()[0]['Rows'][0]['objid']
 
 
 def __get_galaxy_imaging_data(objid):
-    """Get imaging data (run, camcol, field, ra, dec, petroR90_r) for a given galaxy objid"""
+    """Get imaging data (run, camcol, field, ra, dec, petroRad_r) for a given galaxy objid"""
 
     # Get imaging data
     req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
