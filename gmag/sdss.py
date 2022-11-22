@@ -13,14 +13,19 @@ from .galaxy import Galaxy
 
 
 def get_random_galaxy(verbose=True):
-    """"""
+    """Get random galaxy from SDSS"""
     # Create galaxy instance
     galaxy = Galaxy()
 
     # Get a random galaxy objid
     objid = __get_random_galaxy_objid()
+
     # Get imaging data
     imaging_data = __get_galaxy_imaging_data(objid)
+
+    # Set galaxy objid, ra, and dec
+    galaxy.objid = str(objid)
+    galaxy.ra, galaxy.dec = imaging_data['ra'], imaging_data['dec']
 
     if verbose:
         print("Fetching...", end='')

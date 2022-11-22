@@ -1,6 +1,6 @@
-import numpy as np
 from dataclasses import dataclass
-import warnings
+
+import numpy as np
 from matplotlib import pyplot as plt
 
 
@@ -14,30 +14,39 @@ class Galaxy:
     _z: np.ndarray = np.empty(0)
     _jpg_data: np.ndarray = np.empty(0)
 
-    _name: str = ""
-    redshift: float = 0.0
-    ra: float = 0.0
-    dec: float = 0.0
+    _objid: str = None
+    _ra: float = 0.0
+    _dec: float = 0.0
 
     @property
-    def name(self):
-        """Name of the galaxy"""
-        return self._name
+    def objid(self):
+        """The objid of the galaxy"""
+        return self._objid
 
-    @name.setter
-    def name(self, name):
-        """Set the name of the galaxy"""
-        if len(name) > 35:
-            warnings.warn("Name is too long, would be truncated in info method.")
+    @objid.setter
+    def objid(self, objid):
+        """Set the objid of the galaxy"""
+        self._objid = objid
 
-        self._name = name
+    @property
+    def ra(self):
+        """The RA of the galaxy"""
+        return self._ra
 
-    def info(self):
-        """Print out the information of the galaxy"""
-        return f"Name: {self.name:>40.35s}\n" \
-               f"Redshift: {self.redshift:>36.5f}\n" \
-               f"RA: {self.ra:>42.5f}\n" \
-               f"DEC: {self.dec:>41.5f}\n"
+    @ra.setter
+    def ra(self, ra):
+        """Set the RA of the galaxy"""
+        self._ra = ra
+
+    @property
+    def dec(self):
+        """The DEC of the galaxy"""
+        return self._dec
+
+    @dec.setter
+    def dec(self, dec):
+        """Set the DEC of the galaxy"""
+        self._dec = dec
 
     @property
     def data(self):
@@ -83,6 +92,12 @@ class Galaxy:
     def jpg_data(self, jpg):
         """Set the jpg image of the galaxy"""
         self._jpg_data = jpg
+
+    def info(self):
+        """Print out the information of the galaxy"""
+        print(f"SDSS DR17 ObjID: {self.objid:>25.25s}\n"
+              f"RA(deg): {self.ra:>33.5f}\n"
+              f"DEC(deg): {self.dec:>32.5f}")
 
     def preview(self):
         """Show the preview jpg image of the galaxy with dpi=40"""
