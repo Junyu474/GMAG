@@ -46,8 +46,11 @@ def __get_random_galaxy_objid():
 
 
 def __get_galaxy_imaging_data(objid):
-    """Get imaging data (run, camcol, field, ra, dec, petroRad_r) for a given galaxy objid
+    """Get imaging data for a given galaxy objid
+
     :param objid: galaxy ssds dr17 objid
+
+    :return: dict with imaging data (run, camcol, field, ra, dec, petroRad_r)
     """
 
     # Get imaging data
@@ -60,9 +63,10 @@ def __get_galaxy_imaging_data(objid):
 
 def __get_galaxy_jpg_image(ra, dec, petroRad_r):
     """Get jpg image for a given galaxy imaging data
+
     :param ra: right ascension, in degrees
     :param dec: declination, in degrees
-    :param petroRad_r: petroRad_r, in arcsec
+    :param petroRad_r: Petrosian radius, in arcsec
     """
 
     # Compute scale, defined as "/pix
@@ -79,9 +83,15 @@ def __get_galaxy_jpg_image(ra, dec, petroRad_r):
 
 
 def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
-    """Get fits images data for a given galaxy imaging data"""
+    """Get fits images data for a given galaxy imaging data
 
-    # TODO: make this async
+    :param run: the run number, which identifies the specific scan
+    :param camcol: the camera column, a number from 1 to 6, identifying the scanline within the run
+    :param field: the field number
+    :param ra: right ascension, in degrees
+    :param dec: declination, in degrees
+    :param petroRad_r: Petrosian radius, in arcsec
+    """
 
     cutout_images = []
     r = petroRad_r / 3600  # convert to deg
