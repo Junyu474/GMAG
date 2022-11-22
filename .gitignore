@@ -4,5 +4,7 @@
 
 __pycache__
 
-gmag/gmag.egg-info
-examples
+gmag.egg-info/
+examples/
+venv/
+dist/
