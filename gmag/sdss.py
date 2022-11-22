@@ -94,25 +94,32 @@ def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
     :param petroRad_r: Petrosian radius, in arcsec
     """
 
-    r = petroRad_r / 3600
-
     with Pool(5) as p:
         cutout_images = p.starmap(__process_galaxy_fits_image_data,
-                                  [(run, camcol, field, band, ra, dec, r) for band in 'ugriz'])
+                                  [(run, camcol, field, band, ra, dec, petroRad_r) for band in 'ugriz'])
 
     return cutout_images
 
 
-def __process_galaxy_fits_image_data(run, camcol, field, band, ra, dec, r):
+def __process_galaxy_fits_image_data(run, camcol, field, band, ra, dec, petro_r):
     """Get fits image data from url and cutout image,
     multiprocessing worker function for __get_galaxy_fits_images_data
+
+    :param run: the run number, which identifies the specific scan
+    :param camcol: the camera column, a number from 1 to 6, identifying the scanline within the run
+    :param field: the field number
+    :param band: band name
+    :param ra: right ascension, in degrees
+    :param dec: declination, in degrees
+    :param petro_r: Petrosian radius, in arcsec
     """
+
+    r = petro_r / 3600  # convert to degrees
 
     # Get fits image url
     url = f"https://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
           f"{run}/{camcol}/frame-{band}-{run:06d}-{camcol}-{field:04d}.fits.bz2"
 
-    # Read fits image url into numpy array
     # Read fits file
     hdu = fits.open(url, cache=False)
 
