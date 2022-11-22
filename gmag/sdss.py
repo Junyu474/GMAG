@@ -12,23 +12,33 @@ from astropy.wcs import WCS, FITSFixedWarning
 from .galaxy import Galaxy
 
 
-def get_random_galaxy():
+def get_random_galaxy(verbose=True):
     """"""
+    # Create galaxy instance
+    galaxy = Galaxy()
 
     # Get a random galaxy objid
     objid = __get_random_galaxy_objid()
-    print(f"objid: {objid}")
     # Get imaging data
     imaging_data = __get_galaxy_imaging_data(objid)
+
+    if verbose:
+        print("Fetching...", end='')
+
     # Get jpg image
     jpg_data = __get_galaxy_jpg_image(imaging_data['ra'], imaging_data['dec'], imaging_data['petroRad_r'])
+    galaxy.jpg_data = jpg_data
+
+    if verbose:
+        print("\rStill fetching ugriz data..., here is a preview:")
+        galaxy.preview()
+
     # Get fits images data
     cutout_images = __get_galaxy_fits_images_data(**imaging_data)
-
-    # Create galaxy instance
-    galaxy = Galaxy()
-    galaxy.jpg_data = jpg_data
     galaxy.data = cutout_images
+
+    if verbose:
+        print("\rDone!")
 
     return galaxy
 

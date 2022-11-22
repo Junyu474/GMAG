@@ -1,6 +1,7 @@
 import numpy as np
 from dataclasses import dataclass
 import warnings
+from matplotlib import pyplot as plt
 
 
 @dataclass
@@ -57,3 +58,14 @@ class Galaxy:
     def jpg_data(self, jpg):
         """Set the jpg image of the galaxy"""
         self._jpg_data = jpg
+
+    def preview(self):
+        """Show the preview jpg image of the galaxy with dpi=40"""
+
+        if self._jpg_data.size == 0:
+            raise ValueError("No jpg data found.")
+        else:
+            plt.figure(dpi=40)
+            plt.axis('off')
+            plt.imshow(self._jpg_data)
+            plt.show()
