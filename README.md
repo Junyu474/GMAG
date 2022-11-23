@@ -60,7 +60,7 @@ galaxy.show_band('r')
 more control over the plot:
 
 ```python
-galaxy.show_band('r', cmap='gray', high_contrast=True, colorbar=True)
+galaxy.show_band('r', cmap='viridis', high_contrast=True, colorbar=True)
 ```
 
 ![r_more](https://user-images.githubusercontent.com/48139961/203445176-5219608e-1a99-4e92-8ffb-23959460f94d.png)
