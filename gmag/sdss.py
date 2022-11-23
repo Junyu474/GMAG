@@ -52,7 +52,7 @@ def __get_random_galaxy_objid():
     """Request random galaxy from SDSS in a random field"""
 
     # Get random objid
-    req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+    req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
                        f"SELECT TOP 1 g.objid FROM Galaxy AS g "
                        f"JOIN ZooNoSpec as z ON g.objid = z.objid "
                        f"WHERE g.clean = 1 AND g.petroRad_r>12 AND g.petroRadErr_r!=-1000 "
@@ -70,7 +70,7 @@ def __get_galaxy_imaging_data(objid):
     """
 
     # Get imaging data
-    req = requests.get(f"https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+    req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
                        f"SELECT run, camcol, field, ra, dec, petroRad_r FROM Galaxy "
                        f"WHERE objid = {objid}")
 
@@ -90,7 +90,7 @@ def __get_galaxy_jpg_image(ra, dec, petroRad_r):
     img_size = 256
     scale = 2 * 1.25 * petroRad_r / img_size
 
-    url = f"https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?" \
+    url = f"http://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?" \
           f"ra={ra}&dec={dec}&scale={scale}&width={img_size}&height={img_size}"
 
     # Read jpg image url into numpy array
@@ -132,7 +132,7 @@ def __process_galaxy_fits_image_data(run, camcol, field, band, ra, dec, petro_r)
     r = petro_r / 3600  # convert to degrees
 
     # Get fits image url
-    url = f"https://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
+    url = f"http://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
           f"{run}/{camcol}/frame-{band}-{run:06d}-{camcol}-{field:04d}.fits.bz2"
 
     # Read fits file
