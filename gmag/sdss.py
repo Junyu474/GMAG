@@ -7,6 +7,7 @@ import requests
 from PIL import Image
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
+from astropy.table import Table as AstropyTable
 from astropy.wcs import WCS, FITSFixedWarning
 
 from .galaxy import Galaxy
@@ -46,6 +47,37 @@ def get_random_galaxy(verbose=True):
         print("\rDone!")
 
     return galaxy
+
+
+def download_images(file, bands='ugriz'):
+    """Read ra dec from file and download galaxy fits images
+
+    :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
+    :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
+    """
+
+    # Check if bands are valid
+    if isinstance(bands, str):
+        bands = list(bands)
+    elif not isinstance(bands, list):
+        raise ValueError("bands must be a string or a list")
+
+    for band in bands:
+        if band not in 'ugriz':
+            raise ValueError(f"Invalid band {band}")
+
+    # Try to open fits file
+    try:
+        table = AstropyTable.read(file)
+    except OSError:
+        raise OSError(f"Could not open file {file}")
+
+    # Check if fits file has ra and dec columns, allow upper and lower case
+    cols = [col.lower() for col in table.colnames]
+    if 'ra' not in cols or 'dec' not in cols:
+        raise ValueError(f"{file} does not have ra and dec columns (case insensitive)")
+
+    # Get ra and dec
 
 
 def __get_random_galaxy_objid():
