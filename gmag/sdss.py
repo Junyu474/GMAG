@@ -49,11 +49,12 @@ def get_random_galaxy(verbose=True):
     return galaxy
 
 
-def download_images(file, bands='ugriz'):
+def download_images(file, bands='ugriz', search_radius=1):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
+    :param search_radius: search radius in arcmimutes, default is 1 arcmin
     """
 
     # Check if bands are valid
@@ -78,6 +79,17 @@ def download_images(file, bands='ugriz'):
         raise ValueError(f"{file} does not have ra and dec columns (case insensitive)")
 
     # Get ra and dec
+    ra_list = table['ra' if 'ra' in table.colnames else 'RA']
+    dec_list = table['dec' if 'dec' in table.colnames else 'DEC']
+
+    # Search for galaxies
+    for ra, dec in zip(ra_list, dec_list):
+        req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+                           f"SELECT TOP 1 G.objid "
+                           f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {search_radius}) AS GN "
+                           f"ON G.objID = GN.objID "
+                           f"ORDER BY GN.distance")
+        print(req.json()[0]['Rows'])
 
 
 def __get_random_galaxy_objid():
