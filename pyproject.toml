@@ -27,9 +27,12 @@ dependencies = [
 ]
 requires-python = ">=3.7"
 
-[project.optional-dependencies]
-build = ["build", "twine"]
-dev = ["black"]
+    [project.optional-dependencies]
+    build = ["build", "twine"]
+    dev = ["black"]
+
+    [project.urls]
+    repository = "https://github.com/Junyu474/GMAG"
 
 [tool.bumpver]
 current_version = "1.0.3"
