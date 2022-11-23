@@ -18,6 +18,9 @@ class Galaxy:
     _ra: float = 0.0
     _dec: float = 0.0
 
+    def __repr__(self):
+        return f"Galaxy[{self._objid}]"
+
     @property
     def objid(self):
         """The objid of the galaxy"""
