@@ -15,7 +15,10 @@ from .galaxy import Galaxy
 
 
 def get_random_galaxy(verbose=True):
-    """Get random galaxy from SDSS"""
+    """Get random galaxy from SDSS
+
+    :param verbose: show verbose, defaults to True
+    """
     # Create galaxy instance
     galaxy = Galaxy()
 
@@ -55,10 +58,10 @@ def download_images(file, bands='ugriz', max_search_radius=8, num_workers=16, pr
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
-    :param max_search_radius: max search radius in arcmimutes, default is 10 arcmin
-    :param num_workers: number of workers for multiprocessing, default is 16
-    :param progress_bar: show progress bar, default is True
-    :param verbose: show verbose, default is False
+    :param max_search_radius: max search radius in arcmimutes, defaults to 10
+    :param num_workers: number of workers for multiprocessing, defaults to 16
+    :param progress_bar: show progress bar, defaults to True
+    :param verbose: show verbose, defaults to False
     """
 
     # Check if bands are valid
@@ -100,7 +103,10 @@ def download_images(file, bands='ugriz', max_search_radius=8, num_workers=16, pr
 
 
 def __get_random_galaxy_objid():
-    """Request random galaxy from SDSS in a random field"""
+    """Request random galaxy from SDSS in a random field
+    
+    :return: galaxy objid
+    """
 
     # Get random objid
     req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
@@ -161,13 +167,13 @@ def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
     """
 
     with Pool(5) as p:
-        cutout_images = p.starmap(__process_galaxy_fits_image_data,
+        cutout_images = p.starmap(__cutout_galaxy_fits_image,
                                   [(run, camcol, field, band, ra, dec, petroRad_r) for band in 'ugriz'])
 
     return cutout_images
 
 
-def __process_galaxy_fits_image_data(run, camcol, field, band, ra, dec, petro_r):
+def __cutout_galaxy_fits_image(run, camcol, field, band, ra, dec, petro_r):
     """Get fits image data from url and cutout image,
     multiprocessing worker function for __get_galaxy_fits_images_data
 
@@ -178,6 +184,8 @@ def __process_galaxy_fits_image_data(run, camcol, field, band, ra, dec, petro_r)
     :param ra: right ascension, in degrees
     :param dec: declination, in degrees
     :param petro_r: Petrosian radius, in arcsec
+
+    :return: cutout image data in numpy array
     """
 
     r = petro_r / 3600  # convert to degrees
@@ -221,7 +229,7 @@ def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
     :param ra: right ascension, in degrees
     :param dec: declination, in degrees
     :param max_search_radius: maximum search radius, in arcmin
-    :param verbose: print message if not found
+    :param verbose: print message if not found, defaults to False
 
     :return: objid of nearby galaxy or None if no galaxy found
     """
