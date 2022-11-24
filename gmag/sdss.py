@@ -50,12 +50,13 @@ def get_random_galaxy(verbose=True):
     return galaxy
 
 
-def download_images(file, bands='ugriz', max_search_radius=8, progress_bar=True, verbose=False):
+def download_images(file, bands='ugriz', max_search_radius=8, num_workers=16, progress_bar=True, verbose=False):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
     :param max_search_radius: max search radius in arcmimutes, default is 10 arcmin
+    :param num_workers: number of workers for multiprocessing, default is 16
     :param progress_bar: show progress bar, default is True
     :param verbose: show verbose, default is False
     """
@@ -81,20 +82,21 @@ def download_images(file, bands='ugriz', max_search_radius=8, progress_bar=True,
     if 'ra' not in cols or 'dec' not in cols:
         raise ValueError(f"{file} does not have ra and dec columns (case insensitive)")
 
-    # Get ra and dec
+    # Get ra and dec  #TODO: able to use custom column names by using args
     ra_list = table['ra' if 'ra' in table.colnames else 'RA']
     dec_list = table['dec' if 'dec' in table.colnames else 'DEC']
-    coords_list = list(zip(ra_list, dec_list))
 
-    # Custom tqdm progress bar
-    iterator = tqdm(coords_list, desc="Searching for galaxies", disable=not progress_bar)
-    # Search for each galaxy (TODO: parallelize)
-    obj_ids = [__search_nearby_galaxy_objid(ra, dec, max_search_radius=max_search_radius, verbose=verbose)
-               for ra, dec in iterator]
-    obj_ids_filtered = list(filter(None, obj_ids))
+    # Create args for multiprocessing in searching nearby galaxies
+    args = list(zip(ra_list, dec_list, [max_search_radius] * len(ra_list)))
 
-    print(f"Found {len(obj_ids_filtered)} galaxies out of {len(obj_ids)}")
+    # Create pool of workers to search for galaxies, track progress with tqdm if progress_bar is True
+    with Pool(num_workers) as pool:
+        obj_ids = list(tqdm(pool.imap(__search_nearby_galaxy_objid_wrapper, args),
+                            total=len(args), disable=not progress_bar,
+                            desc="Searching galaxies", unit="obj"))
 
+    found_gal_row_ids = [i for i, obj_id in enumerate(obj_ids) if obj_id is not None]
+    print(f"Found {len(found_gal_row_ids)} out of {len(obj_ids)} galaxies")
 
 
 def __get_random_galaxy_objid():
@@ -251,3 +253,10 @@ def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
     return None
 
 
+def __search_nearby_galaxy_objid_wrapper(args):
+    """Wrapper for __search_nearby_galaxy_objid for multiprocessing
+
+    :param args: tuple of ra, dec, max_search_radius, verbose
+    """
+
+    return __search_nearby_galaxy_objid(*args)
