@@ -43,8 +43,10 @@ def get_random_galaxy(verbose=True):
         print("\rStill fetching ugriz data..., here is a preview:")
         galaxy.preview()
 
-    # Get fits images data
-    cutout_images = __get_galaxy_fits_images_data(**imaging_data)
+    # Get cutout fits images data using multiprocessing
+    params = [(*imaging_data.values(), band) for band in 'ugriz']
+    with Pool(5) as p:
+        cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
     galaxy.data = cutout_images
 
     if verbose:
@@ -104,7 +106,7 @@ def download_images(file, bands='ugriz', max_search_radius=8, num_workers=16, pr
 
 def __get_random_galaxy_objid():
     """Request random galaxy from SDSS in a random field
-    
+
     :return: galaxy objid
     """
 
@@ -155,35 +157,17 @@ def __get_galaxy_jpg_image(ra, dec, petroRad_r):
     return jpg_data
 
 
-def __get_galaxy_fits_images_data(run, camcol, field, ra, dec, petroRad_r):
-    """Get fits images data for a given galaxy imaging data
-
-    :param run: the run number, which identifies the specific scan
-    :param camcol: the camera column, a number from 1 to 6, identifying the scanline within the run
-    :param field: the field number
-    :param ra: right ascension, in degrees
-    :param dec: declination, in degrees
-    :param petroRad_r: Petrosian radius, in arcsec
-    """
-
-    with Pool(5) as p:
-        cutout_images = p.starmap(__cutout_galaxy_fits_image,
-                                  [(run, camcol, field, band, ra, dec, petroRad_r) for band in 'ugriz'])
-
-    return cutout_images
-
-
-def __cutout_galaxy_fits_image(run, camcol, field, band, ra, dec, petro_r):
+def __cutout_galaxy_fits_image(run, camcol, field, ra, dec, petro_r, band):
     """Get fits image data from url and cutout image,
     multiprocessing worker function for __get_galaxy_fits_images_data
 
     :param run: the run number, which identifies the specific scan
     :param camcol: the camera column, a number from 1 to 6, identifying the scanline within the run
     :param field: the field number
-    :param band: band name
     :param ra: right ascension, in degrees
     :param dec: declination, in degrees
     :param petro_r: Petrosian radius, in arcsec
+    :param band: band name
 
     :return: cutout image data in numpy array
     """
