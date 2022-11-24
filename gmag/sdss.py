@@ -102,14 +102,16 @@ def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', m
 
     # Create pool of workers to search for galaxies, track progress with tqdm if progress_bar is True
     with Pool(num_workers) as pool:
-        obj_ids = list(tqdm(pool.imap(__search_nearby_galaxy_objid_wrapper, args),
-                            total=len(args), disable=not progress_bar,
-                            desc="Searching galaxies", unit="obj"))
+        galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, args),
+                             total=len(args), disable=not progress_bar,
+                             desc="Searching galaxies", unit="obj"))
 
-    found_gal_row_ids = [i for i, obj_id in enumerate(obj_ids) if obj_id is not None]
+    found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
 
     if verbose:
-        print(f"Found {len(found_gal_row_ids)} out of {len(obj_ids)} galaxies")
+        print(f"Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
+
+    print(galaxies)
 
 
 def __get_random_galaxy_objid():
@@ -219,17 +221,17 @@ def __cutout_galaxy_fits_image(fits_file, ra, dec, petro_r):
     return cutout_image
 
 
-def __search_nearby_galaxy_objid_wrapper(args):
-    """Wrapper for __search_nearby_galaxy_objid for multiprocessing
+def __search_nearby_galaxy_wrapper(args):
+    """Wrapper for __search_nearby_galaxy for multiprocessing
 
     :param args: tuple of ra, dec, max_search_radius, verbose
     """
 
-    return __search_nearby_galaxy_objid(*args)
+    return __search_nearby_galaxy(*args)
 
 
-def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
-    """Search for a galaxy by ra dec and return objid
+def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
+    """Search for a galaxy by ra dec and return galaxy data
 
     Use the fGetNearbyObjEq function from the SDSS SkyServer API.
     Start with a search radius of 1 arcmin and double the radius until over the max_search_radius.
@@ -240,29 +242,31 @@ def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
     :param max_search_radius: maximum search radius, in arcmin
     :param verbose: print message if not found, defaults to False
 
-    :return: objid of nearby galaxy or None if no galaxy found
+    :return: (objid, run, camcol, field, ra, dec, petroRad_r, petroRadErr_r) if found, None otherwise
     """
 
     search_radius = 1
     while search_radius < max_search_radius:
         req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                           f"SELECT TOP 1 G.objid "
+                           f"SELECT TOP 1 G.objid, G.run, G.camcol, G.field, "
+                           f"G.ra, G.dec, G.petroRad_r, G.petroRadErr_r "
                            f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {search_radius}) AS GN "
                            f"ON G.objID = GN.objID "
                            f"ORDER BY GN.distance")
         if req.json()[0]['Rows']:
-            return req.json()[0]['Rows'][0]['objid']
+            return req.json()[0]['Rows'][0]
         search_radius *= 2
 
     # Try one last search at max_search_radius
     if search_radius * 2 != max_search_radius:
         req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                           f"SELECT TOP 1 G.objid "
+                           f"SELECT TOP 1 G.objid, G.run, G.camcol, G.field, "
+                           f"G.ra, G.dec, G.petroRad_r, G.petroRadErr_r "
                            f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {max_search_radius}) AS GN "
                            f"ON G.objID = GN.objID "
                            f"ORDER BY GN.distance")
         if req.json()[0]['Rows']:
-            return req.json()[0]['Rows'][0]['objid']
+            return req.json()[0]['Rows'][0]
 
     if verbose:
         print(f"No nearby galaxy found within {max_search_radius} arcmin")
