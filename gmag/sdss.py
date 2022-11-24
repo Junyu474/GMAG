@@ -245,26 +245,22 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
     :return: (objid, run, camcol, field, ra, dec, petroRad_r, petroRadErr_r) if found, None otherwise
     """
 
+    url = "http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=" \
+          "SELECT TOP 1 G.objid, G.run, G.camcol, G.field, G.ra, G.dec, G.petroRad_r, G.petroRadErr_r " \
+          "FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({}, {}, {}) AS GN " \
+          "ON G.objID = GN.objID " \
+          "ORDER BY GN.distance"
+
     search_radius = 1
     while search_radius < max_search_radius:
-        req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                           f"SELECT TOP 1 G.objid, G.run, G.camcol, G.field, "
-                           f"G.ra, G.dec, G.petroRad_r, G.petroRadErr_r "
-                           f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {search_radius}) AS GN "
-                           f"ON G.objID = GN.objID "
-                           f"ORDER BY GN.distance")
+        req = requests.get(url.format(ra, dec, search_radius))
         if req.json()[0]['Rows']:
             return req.json()[0]['Rows'][0]
         search_radius *= 2
 
     # Try one last search at max_search_radius
     if search_radius * 2 != max_search_radius:
-        req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                           f"SELECT TOP 1 G.objid, G.run, G.camcol, G.field, "
-                           f"G.ra, G.dec, G.petroRad_r, G.petroRadErr_r "
-                           f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {max_search_radius}) AS GN "
-                           f"ON G.objID = GN.objID "
-                           f"ORDER BY GN.distance")
+        req = requests.get(url.format(ra, dec, max_search_radius))
         if req.json()[0]['Rows']:
             return req.json()[0]['Rows'][0]
 
