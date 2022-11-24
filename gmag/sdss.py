@@ -43,8 +43,13 @@ def get_random_galaxy(verbose=True):
         print("\rStill fetching ugriz data..., here is a preview:")
         galaxy.preview()
 
+    # Get fits images urls
+    fits_urls = [__get_url_from_imaging_data(imaging_data['run'], imaging_data['camcol'], imaging_data['field'], band)
+                 for band in 'ugriz']
+
     # Get cutout fits images data using multiprocessing
-    params = [(*imaging_data.values(), band) for band in 'ugriz']
+    params = [(url, imaging_data['ra'], imaging_data['dec'], imaging_data['petroRad_r'])
+              for url in fits_urls]
     with Pool(5) as p:
         cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
     galaxy.data = cutout_images
@@ -102,7 +107,9 @@ def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', m
                             desc="Searching galaxies", unit="obj"))
 
     found_gal_row_ids = [i for i, obj_id in enumerate(obj_ids) if obj_id is not None]
-    print(f"Found {len(found_gal_row_ids)} out of {len(obj_ids)} galaxies")
+
+    if verbose:
+        print(f"Found {len(found_gal_row_ids)} out of {len(obj_ids)} galaxies")
 
 
 def __get_random_galaxy_objid():
@@ -158,29 +165,37 @@ def __get_galaxy_jpg_image(ra, dec, petroRad_r):
     return jpg_data
 
 
-def __cutout_galaxy_fits_image(run, camcol, field, ra, dec, petro_r, band):
-    """Get fits image data from url and cutout image,
-    multiprocessing worker function for __get_galaxy_fits_images_data
+def __get_url_from_imaging_data(run, camcol, field, band):
+    """Get fits image url from imaging data
 
-    :param run: the run number, which identifies the specific scan
-    :param camcol: the camera column, a number from 1 to 6, identifying the scanline within the run
-    :param field: the field number
-    :param ra: right ascension, in degrees
-    :param dec: declination, in degrees
-    :param petro_r: Petrosian radius, in arcsec
-    :param band: band name
+    :param run: run
+    :param camcol: camcol
+    :param field: field
+    :param band: band
+
+    :return: fits image url
+    """
+
+    url = f"http://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
+          f"{run}/{camcol}/frame-{band}-{run:06d}-{camcol}-{field:04d}.fits.bz2"
+    return url
+
+
+def __cutout_galaxy_fits_image(fits_file, ra, dec, petro_r):
+    """Cutout galaxy fits image
+
+    :param fits_file: fits file path, can be a local file or an url
+    :param ra: right ascension of the target, in degrees
+    :param dec: declination of the target, in degrees
+    :param petro_r: Petrosian radius of the target, in arcsec
 
     :return: cutout image data in numpy array
     """
 
     r = petro_r / 3600  # convert to degrees
 
-    # Get fits image url
-    url = f"http://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
-          f"{run}/{camcol}/frame-{band}-{run:06d}-{camcol}-{field:04d}.fits.bz2"
-
     # Read fits file
-    hdu = fits.open(url, cache=False)
+    hdu = fits.open(fits_file, cache=False)
 
     # Read wcs, ignore warnings
     with warnings.catch_warnings():
@@ -202,6 +217,15 @@ def __cutout_galaxy_fits_image(run, camcol, field, ra, dec, petro_r, band):
     cutout_image = hdu[0].data[min_y:max_y, min_x:max_x]
 
     return cutout_image
+
+
+def __search_nearby_galaxy_objid_wrapper(args):
+    """Wrapper for __search_nearby_galaxy_objid for multiprocessing
+
+    :param args: tuple of ra, dec, max_search_radius, verbose
+    """
+
+    return __search_nearby_galaxy_objid(*args)
 
 
 def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
@@ -244,12 +268,3 @@ def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
         print(f"No nearby galaxy found within {max_search_radius} arcmin")
 
     return None
-
-
-def __search_nearby_galaxy_objid_wrapper(args):
-    """Wrapper for __search_nearby_galaxy_objid for multiprocessing
-
-    :param args: tuple of ra, dec, max_search_radius, verbose
-    """
-
-    return __search_nearby_galaxy_objid(*args)
