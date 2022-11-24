@@ -9,6 +9,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.table import Table as AstropyTable
 from astropy.wcs import WCS, FITSFixedWarning
+from tqdm import tqdm
 
 from .galaxy import Galaxy
 
@@ -49,12 +50,14 @@ def get_random_galaxy(verbose=True):
     return galaxy
 
 
-def download_images(file, bands='ugriz', search_radius=1):
+def download_images(file, bands='ugriz', max_search_radius=8, progress_bar=True, verbose=False):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
-    :param search_radius: search radius in arcmimutes, default is 1 arcmin
+    :param max_search_radius: max search radius in arcmimutes, default is 10 arcmin
+    :param progress_bar: show progress bar, default is True
+    :param verbose: show verbose, default is False
     """
 
     # Check if bands are valid
@@ -81,15 +84,17 @@ def download_images(file, bands='ugriz', search_radius=1):
     # Get ra and dec
     ra_list = table['ra' if 'ra' in table.colnames else 'RA']
     dec_list = table['dec' if 'dec' in table.colnames else 'DEC']
+    coords_list = list(zip(ra_list, dec_list))
 
-    # Search for galaxies
-    for ra, dec in zip(ra_list, dec_list):
-        req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
-                           f"SELECT TOP 1 G.objid "
-                           f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {search_radius}) AS GN "
-                           f"ON G.objID = GN.objID "
-                           f"ORDER BY GN.distance")
-        print(req.json()[0]['Rows'])
+    # Custom tqdm progress bar
+    iterator = tqdm(coords_list, desc="Searching for galaxies", disable=not progress_bar)
+    # Search for each galaxy (TODO: parallelize)
+    obj_ids = [__search_nearby_galaxy_objid(ra, dec, max_search_radius=max_search_radius, verbose=verbose)
+               for ra, dec in iterator]
+    obj_ids_filtered = list(filter(None, obj_ids))
+
+    print(f"Found {len(obj_ids_filtered)} galaxies out of {len(obj_ids)}")
+
 
 
 def __get_random_galaxy_objid():
@@ -202,3 +207,47 @@ def __process_galaxy_fits_image_data(run, camcol, field, band, ra, dec, petro_r)
     cutout_image = hdu[0].data[min_y:max_y, min_x:max_x]
 
     return cutout_image
+
+
+def __search_nearby_galaxy_objid(ra, dec, max_search_radius, verbose=False):
+    """Search for a galaxy by ra dec and return objid
+
+    Use the fGetNearbyObjEq function from the SDSS SkyServer API.
+    Start with a search radius of 1 arcmin and double the radius until over the max_search_radius.
+    If max_search_radius is not power of 2, try one last search at max_search_radius.
+
+    :param ra: right ascension, in degrees
+    :param dec: declination, in degrees
+    :param max_search_radius: maximum search radius, in arcmin
+    :param verbose: print message if not found
+
+    :return: objid of nearby galaxy or None if no galaxy found
+    """
+
+    search_radius = 1
+    while search_radius < max_search_radius:
+        req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+                           f"SELECT TOP 1 G.objid "
+                           f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {search_radius}) AS GN "
+                           f"ON G.objID = GN.objID "
+                           f"ORDER BY GN.distance")
+        if req.json()[0]['Rows']:
+            return req.json()[0]['Rows'][0]['objid']
+        search_radius *= 2
+
+    # Try one last search at max_search_radius
+    if search_radius * 2 != max_search_radius:
+        req = requests.get(f"http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd="
+                           f"SELECT TOP 1 G.objid "
+                           f"FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({ra}, {dec}, {max_search_radius}) AS GN "
+                           f"ON G.objID = GN.objID "
+                           f"ORDER BY GN.distance")
+        if req.json()[0]['Rows']:
+            return req.json()[0]['Rows'][0]['objid']
+
+    if verbose:
+        print(f"No nearby galaxy found within {max_search_radius} arcmin")
+
+    return None
+
+
