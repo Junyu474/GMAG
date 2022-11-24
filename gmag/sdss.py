@@ -55,10 +55,13 @@ def get_random_galaxy(verbose=True):
     return galaxy
 
 
-def download_images(file, bands='ugriz', max_search_radius=8, num_workers=16, progress_bar=True, verbose=False):
+def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', max_search_radius=8,
+                    num_workers=16, progress_bar=True, verbose=False):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
+    :param ra_col_name: name of ra column, defaults to 'ra'
+    :param dec_col_name: name of dec column, defaults to 'dec'
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
     :param max_search_radius: max search radius in arcmimutes, defaults to 10
     :param num_workers: number of workers for multiprocessing, defaults to 16
@@ -82,14 +85,12 @@ def download_images(file, bands='ugriz', max_search_radius=8, num_workers=16, pr
     except OSError:
         raise OSError(f"Could not open file {file}")
 
-    # Check if fits file has ra and dec columns, allow upper and lower case
-    cols = [col.lower() for col in table.colnames]
-    if 'ra' not in cols or 'dec' not in cols:
-        raise ValueError(f"{file} does not have ra and dec columns (case insensitive)")
-
-    # Get ra and dec  #TODO: able to use custom column names by using args
-    ra_list = table['ra' if 'ra' in table.colnames else 'RA']
-    dec_list = table['dec' if 'dec' in table.colnames else 'DEC']
+    # Try to get ra and dec columns
+    try:
+        ra_list = table[ra_col_name]
+        dec_list = table[dec_col_name]
+    except KeyError:
+        raise KeyError(f"Could not find ra column '{ra_col_name}' or dec column '{dec_col_name}' in file {file}")
 
     # Create args for multiprocessing in searching nearby galaxies
     args = list(zip(ra_list, dec_list, [max_search_radius] * len(ra_list)))
