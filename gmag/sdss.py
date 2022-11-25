@@ -1,5 +1,5 @@
 import bz2
-import os
+import pathlib
 import shutil
 import warnings
 from datetime import datetime
@@ -36,8 +36,7 @@ def get_random_galaxy(verbose=True):
     galaxy.objid = str(objid)
     galaxy.ra, galaxy.dec = imaging_data['ra'], imaging_data['dec']
 
-    if verbose:
-        print("Fetching...", end='')
+    __verbose_print(verbose, "Fetching...", end='')
 
     # Get jpg image
     jpg_data = __get_galaxy_jpg_image(imaging_data['ra'], imaging_data['dec'], imaging_data['petroRad_r'])
@@ -58,19 +57,18 @@ def get_random_galaxy(verbose=True):
         cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
     galaxy.data = cutout_images
 
-    if verbose:
-        print("\rDone!")
+    __verbose_print(verbose, "Done!")
 
     return galaxy
 
 
-def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', max_search_radius=8,
-                    num_workers=16, progress_bar=True, verbose=False):
+def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8,
+                    name_col=None, num_workers=16, progress_bar=True, verbose=False):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
-    :param ra_col_name: name of ra column, defaults to 'ra'
-    :param dec_col_name: name of dec column, defaults to 'dec'
+    :param ra_col: name of ra column, defaults to 'ra'
+    :param dec_col: name of dec column, defaults to 'dec'
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
     :param max_search_radius: max search radius in arcmimutes, defaults to 10
     :param num_workers: number of workers for multiprocessing, defaults to 16
@@ -96,51 +94,57 @@ def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', m
 
     # 3. Try to get ra and dec columns
     try:
-        ra_list = table[ra_col_name]
-        dec_list = table[dec_col_name]
+        ra_list = table[ra_col]
+        dec_list = table[dec_col]
     except KeyError:
-        raise KeyError(f"Could not find ra column '{ra_col_name}' or dec column '{dec_col_name}' in file {file}")
+        raise KeyError(f"Could not find ra column '{ra_col}' or dec column '{dec_col}' in file {file}")
 
     # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
     search_args = list(zip(ra_list, dec_list, [max_search_radius] * len(ra_list)))
     with Pool(num_workers) as pool:
+        # galaxies is a list of tuples (ra, dec, objid, run, camcol, field), can be None, in order of original table
         galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, search_args),
                              total=len(search_args), disable=not progress_bar,
                              desc="Searching galaxies", unit="obj"))
 
     found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
 
-    if verbose:
-        print(f"Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
+    __verbose_print(verbose, f"Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
 
-    # print(galaxies)
+    # 5. Try to get name column, if None, use rowid_objid
+    if name_col is not None:
+        try:
+            names = table[name_col][found_gal_row_ids]
+        except KeyError:
+            warnings.warn(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead")
+            names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
+    else:
+        names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
 
-    # 5. Get urls for fits images
-    fits_urls = [[__get_url_from_imaging_data(g['run'], g['camcol'], g['field'], band)
-                  for band in bands] if g is not None else None for g in galaxies]
+    # 6. Create output directory
+    parent_dir = pathlib.Path.cwd() / f"images_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    parent_dir.mkdir()
 
-    # 6. Create directory for images
-    parent_dir = f"images_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    os.mkdir(parent_dir)
-    gal_dirs = [os.path.join(parent_dir, f"{g['objid']}") if g is not None else None for g in galaxies]
-    for gal_dir in gal_dirs:
-        if gal_dir is not None:
-            os.mkdir(gal_dir)
-    full_paths = [[os.path.join(gal_dir, f"{band}.fits") for band in bands] if g is not None else None
-                  for gal_dir, g in zip(gal_dirs, galaxies)]
+    # 7. Prepare download args for multiprocessing, create output directories
+    download_args = []
+    for i, gal in enumerate(galaxies):
+        if gal is None:
+            continue
 
-    print(len(full_paths))
+        target_dir = parent_dir / names[i]
+        target_dir.mkdir()
+        for band in bands:
+            url = __get_url_from_imaging_data(gal['run'], gal['camcol'], gal['field'], band)
+            file_path = target_dir / f"{band}.fits"
+            download_args.append((url, target_dir / file_path))
 
-    fits_urls_flat = [url for urls in fits_urls if urls is not None for url in urls]
-    full_paths_flat = [path for paths in full_paths if paths is not None for path in paths]
+    __verbose_print(verbose, f"Created directories for images at {parent_dir}")
 
-    # 6. Download fits images
-    download_args = list(zip(fits_urls_flat, full_paths_flat))
+    # 8. Download images
     with Pool(num_workers) as pool:
-        a = list(tqdm(pool.imap(__download_fits_image_wrapper, download_args),
-                      total=len(download_args), disable=not progress_bar,
-                      desc="Downloading images", unit="obj"))
-    print(a)
+        list(tqdm(pool.imap(__download_fits_image_wrapper, download_args),
+                  total=len(download_args), disable=not progress_bar,
+                  desc="Downloading images", unit="img"))
 
 
 def __get_random_galaxy_objid():
@@ -293,8 +297,7 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
         if req.json()[0]['Rows']:
             return req.json()[0]['Rows'][0]
 
-    if verbose:
-        print(f"No nearby galaxy found within {max_search_radius} arcmin")
+    __verbose_print(f"No nearby galaxy found within {max_search_radius} arcmin")
 
     return None
 
@@ -324,6 +327,18 @@ def __download_fits_image(fits_url, file_path):
         shutil.copyfileobj(in_file, out_file)
 
     # Remove tmp file
-    os.remove(f"{file_path}.bz2")
+    pathlib.Path(f"{file_path}.bz2").unlink()
 
     return file_path
+
+
+def __verbose_print(verbose, *args, **kwargs):
+    """Print if verbose is True
+
+    :param verbose: verbose flag
+    :param args: arguments to print
+    :param kwargs: keyword arguments to print
+    """
+
+    if verbose:
+        print(*args, **kwargs)
