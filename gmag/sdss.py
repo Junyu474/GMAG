@@ -1,4 +1,8 @@
+import bz2
+import os
+import shutil
 import warnings
+from datetime import datetime
 from multiprocessing import Pool
 from urllib.request import urlopen
 
@@ -74,7 +78,7 @@ def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', m
     :param verbose: show verbose, defaults to False
     """
 
-    # Check if bands are valid
+    # 1. Check if bands are valid
     if isinstance(bands, str):
         bands = list(bands)
     elif not isinstance(bands, list):
@@ -84,26 +88,24 @@ def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', m
         if band not in 'ugriz':
             raise ValueError(f"Invalid band {band}")
 
-    # Try to open fits file
+    # 2. Try to open fits file
     try:
         table = AstropyTable.read(file)
     except OSError:
         raise OSError(f"Could not open file {file}")
 
-    # Try to get ra and dec columns
+    # 3. Try to get ra and dec columns
     try:
         ra_list = table[ra_col_name]
         dec_list = table[dec_col_name]
     except KeyError:
         raise KeyError(f"Could not find ra column '{ra_col_name}' or dec column '{dec_col_name}' in file {file}")
 
-    # Create args for multiprocessing in searching nearby galaxies
-    args = list(zip(ra_list, dec_list, [max_search_radius] * len(ra_list)))
-
-    # Create pool of workers to search for galaxies, track progress with tqdm if progress_bar is True
+    # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
+    search_args = list(zip(ra_list, dec_list, [max_search_radius] * len(ra_list)))
     with Pool(num_workers) as pool:
-        galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, args),
-                             total=len(args), disable=not progress_bar,
+        galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, search_args),
+                             total=len(search_args), disable=not progress_bar,
                              desc="Searching galaxies", unit="obj"))
 
     found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
@@ -111,7 +113,34 @@ def download_images(file, ra_col_name='ra', dec_col_name='dec', bands='ugriz', m
     if verbose:
         print(f"Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
 
-    print(galaxies)
+    # print(galaxies)
+
+    # 5. Get urls for fits images
+    fits_urls = [[__get_url_from_imaging_data(g['run'], g['camcol'], g['field'], band)
+                  for band in bands] if g is not None else None for g in galaxies]
+
+    # 6. Create directory for images
+    parent_dir = f"images_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    os.mkdir(parent_dir)
+    gal_dirs = [os.path.join(parent_dir, f"{g['objid']}") if g is not None else None for g in galaxies]
+    for gal_dir in gal_dirs:
+        if gal_dir is not None:
+            os.mkdir(gal_dir)
+    full_paths = [[os.path.join(gal_dir, f"{band}.fits") for band in bands] if g is not None else None
+                  for gal_dir, g in zip(gal_dirs, galaxies)]
+
+    print(len(full_paths))
+
+    fits_urls_flat = [url for urls in fits_urls if urls is not None for url in urls]
+    full_paths_flat = [path for paths in full_paths if paths is not None for path in paths]
+
+    # 6. Download fits images
+    download_args = list(zip(fits_urls_flat, full_paths_flat))
+    with Pool(num_workers) as pool:
+        a = list(tqdm(pool.imap(__download_fits_image_wrapper, download_args),
+                      total=len(download_args), disable=not progress_bar,
+                      desc="Downloading images", unit="obj"))
+    print(a)
 
 
 def __get_random_galaxy_objid():
@@ -268,3 +297,33 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
         print(f"No nearby galaxy found within {max_search_radius} arcmin")
 
     return None
+
+
+def __download_fits_image_wrapper(args):
+    """Wrapper for __download_fits_image for multiprocessing
+
+    :param args: tuple of url, output_dir
+    """
+
+    return __download_fits_image(*args)
+
+
+def __download_fits_image(fits_url, file_path):
+    """Download fits image from url to file_path
+
+    :param fits_url: fits image url
+    :param file_path: file path to save the fits image
+    """
+
+    # Download fits image
+    with urlopen(fits_url) as response, open(f"{file_path}.bz2", 'wb') as out_file:
+        shutil.copyfileobj(response, out_file)
+
+    # Decompress
+    with bz2.open(f"{file_path}.bz2", 'rb') as in_file, open(file_path, 'wb') as out_file:
+        shutil.copyfileobj(in_file, out_file)
+
+    # Remove tmp file
+    os.remove(f"{file_path}.bz2")
+
+    return file_path
