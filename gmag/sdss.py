@@ -118,8 +118,16 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     if name_col is not None:
         try:
             names = table[name_col]
+            # Replace empty names with unknown_rowid
+            names = [name if name else f"unknown_rowid_{i}" for i, name in enumerate(names)]
+            # Check if names are unique
+            if len(set(names)) != len(names):
+                raise ValueError()
         except KeyError:
-            warnings.warn(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead")
+            __print_in_red(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead")
+            names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
+        except ValueError:
+            __print_in_red(f"Names are not unique, using rowid_objid instead")
             names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
     else:
         names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
@@ -127,6 +135,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     # 6. Create output directory
     parent_dir = pathlib.Path.cwd() / f"images_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     parent_dir.mkdir()
+    __verbose_print(verbose, f"---\nCreated directories for images at {parent_dir}")
 
     # 7. Prepare download args for multiprocessing, create output directories
     download_args = []
@@ -140,8 +149,6 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
             url = __get_url_from_imaging_data(gal['run'], gal['camcol'], gal['field'], band)
             file_path = target_dir / f"{band}.fits"
             download_args.append((url, target_dir / file_path))
-
-    __verbose_print(verbose, f"---\nCreated directories for images at {parent_dir}")
 
     # 8. Download images
     with Pool(num_workers) as pool:
@@ -157,7 +164,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
             f.write(f"# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n")
             f.write(f"# -- Bands: {bands}\n")
             f.write(f"# -- Max search radius: {max_search_radius} arcmin\n")
-            f.write(f"{'-'*40}\n")
+            f.write(f"{'-' * 40}\n")
 
             writer = csv.writer(f)
 
@@ -369,3 +376,13 @@ def __verbose_print(verbose, *args, **kwargs):
 
     if verbose:
         print(*args, **kwargs)
+
+
+def __print_in_red(*args, **kwargs):
+    """Print in red
+
+    :param args: arguments to print
+    :param kwargs: keyword arguments to print
+    """
+
+    print("\033[91m{}\033[00m".format(*args, **kwargs))
