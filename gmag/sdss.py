@@ -1,4 +1,5 @@
 import bz2
+import csv
 import pathlib
 import shutil
 import warnings
@@ -63,7 +64,7 @@ def get_random_galaxy(verbose=True):
 
 
 def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8,
-                    name_col=None, num_workers=16, progress_bar=True, verbose=False):
+                    name_col=None, num_workers=16, progress_bar=True, verbose=False, info_file=True):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
@@ -75,6 +76,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     :param num_workers: number of workers for multiprocessing, defaults to 16
     :param progress_bar: show progress bar, defaults to True
     :param verbose: show verbose, defaults to False
+    :param info_file: create info file, defaults to True
     """
 
     # 1. Check if bands are valid
@@ -115,7 +117,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     # 5. Try to get name column, if None, use rowid_objid
     if name_col is not None:
         try:
-            names = table[name_col][found_gal_row_ids]
+            names = table[name_col]
         except KeyError:
             warnings.warn(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead")
             names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
@@ -139,13 +141,37 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
             file_path = target_dir / f"{band}.fits"
             download_args.append((url, target_dir / file_path))
 
-    __verbose_print(verbose, f"Created directories for images at {parent_dir}")
+    __verbose_print(verbose, f"---\nCreated directories for images at {parent_dir}")
 
     # 8. Download images
     with Pool(num_workers) as pool:
         list(tqdm(pool.imap(__download_fits_image_wrapper, download_args),
                   total=len(download_args), disable=not progress_bar,
                   desc="Downloading images", unit="img"))
+
+    # 9. Save info file
+    if info_file:
+        __verbose_print(verbose, f"---\nSaving info file at {parent_dir / 'info.csv'}")
+        with open(parent_dir / 'info.csv', 'w') as f:
+            # Write comments on top
+            f.write(f"# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n")
+            f.write(f"# -- Bands: {bands}\n")
+            f.write(f"# -- Max search radius: {max_search_radius} arcmin\n")
+            f.write(f"{'-'*40}\n")
+
+            writer = csv.writer(f)
+
+            # Write header
+            writer.writerow(['ra_orig', 'dec_orig', 'found', 'ra', 'dec', 'dir_name', 'objid'])
+
+            # Write data
+            for i, gal in enumerate(galaxies):
+                if gal is None:
+                    writer.writerow([ra_list[i], dec_list[i], False, None, None, None, None])
+                else:
+                    writer.writerow([ra_list[i], dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid']])
+
+    __verbose_print(verbose, f"---\nDone!")
 
 
 def __get_random_galaxy_objid():
