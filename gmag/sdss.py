@@ -71,6 +71,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     :param dec_col: name of dec column, defaults to 'dec'
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
     :param max_search_radius: max search radius in arcmimutes, defaults to 10
+    :param name_col: name of name column, defaults to None
     :param num_workers: number of workers for multiprocessing, defaults to 16
     :param progress_bar: show progress bar, defaults to True
     :param verbose: show verbose, defaults to False
@@ -179,18 +180,18 @@ def __get_galaxy_imaging_data(objid):
     return req.json()[0]['Rows'][0]
 
 
-def __get_galaxy_jpg_image(ra, dec, petroRad_r):
+def __get_galaxy_jpg_image(ra, dec, petro_r):
     """Get jpg image for a given galaxy imaging data
 
     :param ra: right ascension, in degrees
     :param dec: declination, in degrees
-    :param petroRad_r: Petrosian radius, in arcsec
+    :param petro_r: Petrosian radius, in arcsec
     """
 
     # Compute scale, defined as "/pix
     # Fix image size 2*1.25*radius arcsec
     img_size = 256
-    scale = 2 * 1.25 * petroRad_r / img_size
+    scale = 2 * 1.25 * petro_r / img_size
 
     url = f"http://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?" \
           f"ra={ra}&dec={dec}&scale={scale}&width={img_size}&height={img_size}"
@@ -297,7 +298,7 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
         if req.json()[0]['Rows']:
             return req.json()[0]['Rows'][0]
 
-    __verbose_print(f"No nearby galaxy found within {max_search_radius} arcmin")
+    __verbose_print(verbose, f"No nearby galaxy found within {max_search_radius} arcmin")
 
     return None
 
