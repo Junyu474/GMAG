@@ -14,7 +14,8 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.table import Table as AstropyTable
 from astropy.wcs import WCS, FITSFixedWarning
-from tqdm import tqdm
+from tqdm import tqdm as tqdm_std
+from tqdm.notebook import tqdm as tqdm_nb
 
 from .galaxy import Galaxy
 
@@ -64,7 +65,8 @@ def get_random_galaxy(verbose=True):
 
 
 def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8, cutout=True,
-                    name_col=None, num_workers=16, progress_bar=True, verbose=False, info_file=True):
+                    name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True,
+                    notebook=True):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
@@ -78,7 +80,10 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     :param progress_bar: show progress bar, defaults to True
     :param verbose: show verbose, defaults to False
     :param info_file: create info file, defaults to True
+    :param notebook: use notebook progress bar for better visual, defaults to True
     """
+
+    tqdm = tqdm_nb if notebook else tqdm_std
 
     # 1. Check if bands are valid
     if isinstance(bands, str):
@@ -113,7 +118,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
 
     found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
 
-    __verbose_print(verbose, f"Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
+    __verbose_print(verbose, f"...Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
 
     # 5. Try to get name column, if None, use rowid_objid
     if name_col is not None:
@@ -125,10 +130,10 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
             if len(set(names)) != len(names):
                 raise ValueError()
         except KeyError:
-            __print_in_red(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead")
+            print(__str_in_red(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead"))
             names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
         except ValueError:
-            __print_in_red(f"Names are not unique, using rowid_objid instead")
+            print(__str_in_red(f"Names are not unique, using rowid_objid instead"))
             names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
     else:
         names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
@@ -136,7 +141,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     # 6. Create output directory
     parent_dir = pathlib.Path.cwd() / f"images_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     parent_dir.mkdir()
-    __verbose_print(verbose, f"{'-' * 10}\nCreated directories for images at {parent_dir}")
+    __verbose_print(verbose, f"...Created directories for images at {__str_in_blue(parent_dir)}")
 
     # 7. Prepare download args for multiprocessing, create output directories
     download_args = []
@@ -174,7 +179,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
 
     # 10. Save info file
     if info_file:
-        __verbose_print(verbose, f"{'-' * 10}\nSaving info file at {parent_dir / 'info.csv'}")
+        __verbose_print(verbose, f"...Saving info file at {__str_in_blue(parent_dir / 'info.csv')}")
         with open(parent_dir / 'info.csv', 'w') as f:
             # Write comments on top
             f.write(f"# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n")
@@ -199,7 +204,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
                     writer.writerow([ra_list[i], dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
                                      cutout_shapes[i]])
 
-    __verbose_print(verbose, f"{'-' * 10}\nALL DONE!")
+    __verbose_print(verbose, __str_in_bold(f"ALL DONE!"))
 
 
 def __get_random_galaxy_objid():
@@ -428,11 +433,33 @@ def __verbose_print(verbose, *args, **kwargs):
         print(*args, **kwargs)
 
 
-def __print_in_red(*args, **kwargs):
-    """Print in red
-
-    :param args: arguments to print
-    :param kwargs: keyword arguments to print
+def __str_in_red(string):
+    """Return string in red
+    
+    :param string: string to return in red
+    
+    :return: string in red
     """
 
-    print("\033[91m{}\033[00m".format(*args, **kwargs))
+    return "\033[91m{}\033[00m".format(string)
+
+
+def __str_in_blue(string):
+    """Return string in blue
+    
+    :param string: string to return in blue
+    
+    :return: string in blue
+    """
+
+    return "\033[94m{}\033[00m".format(string)
+
+def __str_in_bold(string):
+    """Return string in bold
+
+    :param string: string to return in bold
+
+    :return: string in bold
+    """
+
+    return "\033[1m{}\033[00m".format(string)
