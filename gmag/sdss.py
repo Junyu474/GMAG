@@ -63,7 +63,7 @@ def get_random_galaxy(verbose=True):
     return galaxy
 
 
-def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8,
+def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8, cutout=True,
                     name_col=None, num_workers=16, progress_bar=True, verbose=False, info_file=True):
     """Read ra dec from file and download galaxy fits images
 
@@ -72,6 +72,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     :param dec_col: name of dec column, defaults to 'dec'
     :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
     :param max_search_radius: max search radius in arcmimutes, defaults to 10
+    :param cutout: cutout images, defaults to True
     :param name_col: name of name column, defaults to None
     :param num_workers: number of workers for multiprocessing, defaults to 16
     :param progress_bar: show progress bar, defaults to True
@@ -135,7 +136,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     # 6. Create output directory
     parent_dir = pathlib.Path.cwd() / f"images_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     parent_dir.mkdir()
-    __verbose_print(verbose, f"---\nCreated directories for images at {parent_dir}")
+    __verbose_print(verbose, f"{'-' * 10}\nCreated directories for images at {parent_dir}")
 
     # 7. Prepare download args for multiprocessing, create output directories
     download_args = []
@@ -148,37 +149,57 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
         for band in bands:
             url = __get_url_from_imaging_data(gal['run'], gal['camcol'], gal['field'], band)
             file_path = target_dir / f"{band}.fits"
-            download_args.append((url, target_dir / file_path))
+            if cutout:
+                download_args.append((url, target_dir / file_path, gal['ra'], gal['dec'], gal['petroRad_r']))
+            else:
+                download_args.append((url, target_dir / file_path))
 
-    # 8. Download images
+    # 8. Download images # TODO: flag if petroRad_err is -1000
+    download_func = __download_fits_image_with_cutout_wrapper if cutout else __download_fits_image_wrapper
     with Pool(num_workers) as pool:
-        list(tqdm(pool.imap(__download_fits_image_wrapper, download_args),
-                  total=len(download_args), disable=not progress_bar,
-                  desc="Downloading images", unit="img"))
+        return_val = list(tqdm(pool.imap(download_func, download_args),
+                               total=len(download_args), disable=not progress_bar,
+                               desc="Downloading images", unit="img"))
 
-    # 9. Save info file
+    # 9. Create cutout shape column based on return value
+    if cutout:
+        # return_val is list of shapes in order, same galaxy will have duplicate shapes for each band, only keep one
+        found_cutout_shapes = [shape for i, shape in enumerate(return_val) if i % len(bands) == 0]
+        # Create column for cutout shape including not found galaxies
+        cutout_shapes = [None] * len(galaxies)
+        for i, shape in zip(found_gal_row_ids, found_cutout_shapes):
+            cutout_shapes[i] = shape
+    else:
+        cutout_shapes = ['Uncut'] * len(galaxies)
+
+    # 10. Save info file
     if info_file:
-        __verbose_print(verbose, f"---\nSaving info file at {parent_dir / 'info.csv'}")
+        __verbose_print(verbose, f"{'-' * 10}\nSaving info file at {parent_dir / 'info.csv'}")
         with open(parent_dir / 'info.csv', 'w') as f:
             # Write comments on top
             f.write(f"# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n")
-            f.write(f"# -- Bands: {bands}\n")
+            if cutout:
+                f.write(f"# Images are cutout based on galaxy's petrosian radius\n")
+            else:
+                f.write(f"# Images are standard SDSS frame (not cropped)\n")
+            f.write(f"# -- Bands: {' '.join(bands)}\n")
             f.write(f"# -- Max search radius: {max_search_radius} arcmin\n")
             f.write(f"{'-' * 40}\n")
 
             writer = csv.writer(f)
 
             # Write header
-            writer.writerow(['ra_orig', 'dec_orig', 'found', 'ra', 'dec', 'dir_name', 'objid'])
+            writer.writerow(['ra_orig', 'dec_orig', 'found', 'ra', 'dec', 'dir_name', 'objid', 'cutout_shape'])
 
             # Write data
             for i, gal in enumerate(galaxies):
                 if gal is None:
-                    writer.writerow([ra_list[i], dec_list[i], False, None, None, None, None])
+                    writer.writerow([ra_list[i], dec_list[i], False, None, None, None, None, None])
                 else:
-                    writer.writerow([ra_list[i], dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid']])
+                    writer.writerow([ra_list[i], dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
+                                     cutout_shapes[i]])
 
-    __verbose_print(verbose, f"---\nDone!")
+    __verbose_print(verbose, f"{'-' * 10}\nALL DONE!")
 
 
 def __get_random_galaxy_objid():
@@ -363,7 +384,36 @@ def __download_fits_image(fits_url, file_path):
     # Remove tmp file
     pathlib.Path(f"{file_path}.bz2").unlink()
 
-    return file_path
+
+def __download_fits_image_with_cutout_wrapper(args):
+    """Wrapper for __download_fits_image_with_cutout for multiprocessing
+
+    :param args: tuple of fits_url, output_dir, ra, dec, petro_r
+    """
+
+    return __download_fits_image_with_cutout(*args)
+
+
+def __download_fits_image_with_cutout(fits_url, file_path, ra, dec, petro_r):
+    """Download fits image from url to file_path and cutout galaxy
+
+    :param fits_url: fits image url
+    :param file_path: file path to save the fits image
+    :param ra: right ascension of the target, in degrees
+    :param dec: declination of the target, in degrees
+    :param petro_r: Petrosian radius of the target, in arcsec
+
+    :return: cutout image shape
+    """
+
+    # Get cutout image np array
+    cutout_arr = __cutout_galaxy_fits_image(fits_url, ra, dec, petro_r)
+
+    # Save cutout image as fits
+    hdu = fits.PrimaryHDU(cutout_arr)
+    hdu.writeto(file_path)
+
+    return cutout_arr.shape
 
 
 def __verbose_print(verbose, *args, **kwargs):
