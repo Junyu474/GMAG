@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gmag"
 version = "2.0.1"
-description = "Get me a galaxy"
+description = "Give Me A Galaxy! | Fast SDSS Galaxy Image Download"
 readme = "README.md"
 authors = [
     { name = "Junyu Chen" },
@@ -24,7 +24,7 @@ dependencies = [
     "matplotlib>=3.2",
     "requests>=2.23",
     "tqdm>=4.48",
-    "tomli; python_version< '3.11'",
+    "jupyter>=1.0",
 ]
 requires-python = ">=3.7"
 
