@@ -8,3 +8,5 @@ gmag.egg-info/
 examples/
 venv/
 dist/
+
+**/*.ipynb_checkpoints/
