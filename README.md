@@ -16,7 +16,7 @@ from gmag import sdss
 
 sdss.download_images('galaxies_coord_table.fit')
 
-# ---example outout---
+# ---example output---
 # Searching galaxies: 100%|██████████| 10/10 [00:02<00:00,  3.73obj/s]
 # ...Found 7 out of 10 galaxies
 # ...Created directories for images at /images_2022-11-26_11-01-05
