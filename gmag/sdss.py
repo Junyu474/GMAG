@@ -14,8 +14,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.table import Table as AstropyTable
 from astropy.wcs import WCS, FITSFixedWarning
-from tqdm import tqdm as tqdm_std
-from tqdm.notebook import tqdm as tqdm_nb
+from tqdm.auto import tqdm
 
 from .galaxy import Galaxy
 
@@ -65,8 +64,7 @@ def get_random_galaxy(verbose=True):
 
 
 def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8, cutout=True,
-                    name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True,
-                    notebook=True):
+                    name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True):
     """Read ra dec from file and download galaxy fits images
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
@@ -80,10 +78,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     :param progress_bar: show progress bar, defaults to True
     :param verbose: show verbose, defaults to False
     :param info_file: create info file, defaults to True
-    :param notebook: use notebook progress bar for better visual, defaults to True
     """
-
-    tqdm = tqdm_nb if notebook else tqdm_std
 
     # 1. Check if bands are valid
     if isinstance(bands, str):
@@ -453,6 +448,7 @@ def __str_in_blue(string):
     """
 
     return "\033[94m{}\033[00m".format(string)
+
 
 def __str_in_bold(string):
     """Return string in bold
