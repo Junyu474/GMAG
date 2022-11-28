@@ -22,6 +22,9 @@ from .galaxy import Galaxy
 def get_random_galaxy(verbose=True):
     """Get random galaxy from SDSS
 
+    Note: If not running in a notebook, must run in __main__ to avoid multiprocessing issues
+
+
     :param verbose: show verbose, defaults to True
     """
     # Create galaxy instance
@@ -66,6 +69,8 @@ def get_random_galaxy(verbose=True):
 def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8, cutout=True,
                     name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True):
     """Read ra dec from file and download galaxy fits images
+
+    Note: If not running in a notebook, must run in __main__ to avoid multiprocessing issues
 
     :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
     :param ra_col: name of ra column, defaults to 'ra'
