@@ -112,13 +112,13 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
 
     # 3. Try to get ra and dec columns
     try:
-        ra_list = table[ra_col]
-        dec_list = table[dec_col]
+        orig_ra_list = table[ra_col]
+        orig_dec_list = table[dec_col]
     except KeyError:
         raise KeyError(f"Could not find ra column '{ra_col}' or dec column '{dec_col}' in file {file}")
 
     # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
-    search_args = list(zip(ra_list, dec_list, [max_search_radius] * len(ra_list)))
+    search_args = list(zip(orig_ra_list, orig_dec_list, [max_search_radius] * len(orig_ra_list)))
     with Pool(num_workers) as pool:
         # galaxies is a list of tuples (ra, dec, objid, run, camcol, field), can be None, in order of original table
         galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, search_args),
@@ -147,7 +147,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     else:
         names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
 
-    # 6. Create output directory
+    # 6. Create output parent directory
     parent_dir = pathlib.Path.cwd() / f"images_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     parent_dir.mkdir()
     pu.verbose_print(verbose, f"...Created directories for images at {pu.blue(parent_dir)}")
@@ -208,9 +208,9 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
             # Write data
             for i, gal in enumerate(galaxies):
                 if gal is None:
-                    writer.writerow([ra_list[i], dec_list[i], False, None, None, None, None, None])
+                    writer.writerow([orig_ra_list[i], orig_dec_list[i], False, None, None, None, None, None])
                 else:
-                    writer.writerow([ra_list[i], dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
+                    writer.writerow([orig_ra_list[i], orig_dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
                                      cutout_shapes[i]])
 
     pu.verbose_print(verbose, pu.bold(f"ALL DONE!"))
