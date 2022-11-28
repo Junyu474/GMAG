@@ -17,6 +17,7 @@ from astropy.wcs import WCS, FITSFixedWarning
 from tqdm.auto import tqdm
 
 from .galaxy import Galaxy
+from . import _print_util as pu
 
 
 def get_random_galaxy(verbose=True):
@@ -40,7 +41,7 @@ def get_random_galaxy(verbose=True):
     galaxy.objid = str(objid)
     galaxy.ra, galaxy.dec = imaging_data['ra'], imaging_data['dec']
 
-    __verbose_print(verbose, "Fetching...", end='')
+    pu.verbose_print(verbose, "Fetching...", end='')
 
     # Get jpg image
     jpg_data = __get_galaxy_jpg_image(imaging_data['ra'], imaging_data['dec'], imaging_data['petroRad_r'])
@@ -61,7 +62,7 @@ def get_random_galaxy(verbose=True):
         cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
     galaxy.data = cutout_images
 
-    __verbose_print(verbose, "Done!")
+    pu.verbose_print(verbose, "Done!")
 
     return galaxy
 
@@ -118,7 +119,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
 
     found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
 
-    __verbose_print(verbose, f"...Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
+    pu.verbose_print(verbose, f"...Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies")
 
     # 5. Try to get name column, if None, use rowid_objid
     if name_col is not None:
@@ -130,10 +131,10 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
             if len(set(names)) != len(names):
                 raise ValueError()
         except KeyError:
-            print(__str_in_red(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead"))
+            print(pu.red(f"Could not find name column '{name_col}' in file {file}, using rowid_objid instead"))
             names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
         except ValueError:
-            print(__str_in_red(f"Names are not unique, using rowid_objid instead"))
+            print(pu.red(f"Names are not unique, using rowid_objid instead"))
             names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
     else:
         names = [f"{i}_{g['objid']}" if g is not None else None for i, g in enumerate(galaxies)]
@@ -141,7 +142,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     # 6. Create output directory
     parent_dir = pathlib.Path.cwd() / f"images_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     parent_dir.mkdir()
-    __verbose_print(verbose, f"...Created directories for images at {__str_in_blue(parent_dir)}")
+    pu.verbose_print(verbose, f"...Created directories for images at {pu.blue(parent_dir)}")
 
     # 7. Prepare download args for multiprocessing, create output directories
     download_args = []
@@ -179,7 +180,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
 
     # 10. Save info file
     if info_file:
-        __verbose_print(verbose, f"...Saving info file at {__str_in_blue(parent_dir / 'info.csv')}")
+        pu.verbose_print(verbose, f"...Saving info file at {pu.blue(parent_dir / 'info.csv')}")
         with open(parent_dir / 'info.csv', 'w') as f:
             # Write comments on top
             f.write(f"# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n")
@@ -204,7 +205,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
                     writer.writerow([ra_list[i], dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
                                      cutout_shapes[i]])
 
-    __verbose_print(verbose, __str_in_bold(f"ALL DONE!"))
+    pu.verbose_print(verbose, pu.bold(f"ALL DONE!"))
 
 
 def __get_random_galaxy_objid():
@@ -357,7 +358,7 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
         if req.json()[0]['Rows']:
             return req.json()[0]['Rows'][0]
 
-    __verbose_print(verbose, f"No nearby galaxy found within {max_search_radius} arcmin")
+    pu.verbose_print(verbose, f"No nearby galaxy found within {max_search_radius} arcmin")
 
     return None
 
@@ -420,47 +421,3 @@ def __download_fits_image_with_cutout(fits_url, file_path, ra, dec, petro_r):
 
     return cutout_arr.shape
 
-
-def __verbose_print(verbose, *args, **kwargs):
-    """Print if verbose is True
-
-    :param verbose: verbose flag
-    :param args: arguments to print
-    :param kwargs: keyword arguments to print
-    """
-
-    if verbose:
-        print(*args, **kwargs)
-
-
-def __str_in_red(string):
-    """Return string in red
-    
-    :param string: string to return in red
-    
-    :return: string in red
-    """
-
-    return "\033[91m{}\033[00m".format(string)
-
-
-def __str_in_blue(string):
-    """Return string in blue
-    
-    :param string: string to return in blue
-    
-    :return: string in blue
-    """
-
-    return "\033[94m{}\033[00m".format(string)
-
-
-def __str_in_bold(string):
-    """Return string in bold
-
-    :param string: string to return in bold
-
-    :return: string in bold
-    """
-
-    return "\033[1m{}\033[00m".format(string)
