@@ -15,6 +15,7 @@ from astropy.io import fits
 from astropy.table import Table as AstropyTable
 from astropy.wcs import WCS, FITSFixedWarning
 from tqdm.auto import tqdm
+from matplotlib import pyplot as plt
 
 from .galaxy import Galaxy
 from . import _print_util as pu
@@ -28,8 +29,6 @@ def get_random_galaxy(verbose=True):
 
     :param verbose: show verbose, defaults to True
     """
-    # Create galaxy instance
-    galaxy = Galaxy()
 
     # Get a random galaxy objid
     objid = __get_random_galaxy_objid()
@@ -37,19 +36,17 @@ def get_random_galaxy(verbose=True):
     # Get imaging data
     imaging_data = __get_galaxy_imaging_data(objid)
 
-    # Set galaxy objid, ra, and dec
-    galaxy.objid = str(objid)
-    galaxy.ra, galaxy.dec = imaging_data['ra'], imaging_data['dec']
-
     pu.verbose_print(verbose, "Fetching...", end='')
 
     # Get jpg image
     jpg_data = __get_galaxy_jpg_image(imaging_data['ra'], imaging_data['dec'], imaging_data['petroRad_r'])
-    galaxy.jpg_data = jpg_data
 
     if verbose:
         print("\rStill fetching ugriz data..., here is a preview:")
-        galaxy.preview()
+        plt.figure(dpi=40)
+        plt.axis('off')
+        plt.imshow(jpg_data)
+        plt.show()
 
     # Get fits images urls
     fits_urls = [__get_url_from_imaging_data(imaging_data['run'], imaging_data['camcol'], imaging_data['field'], band)
@@ -60,7 +57,18 @@ def get_random_galaxy(verbose=True):
               for url in fits_urls]
     with Pool(5) as p:
         cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
-    galaxy.data = cutout_images
+
+    galaxy = Galaxy(
+        objid=str(objid),
+        u=cutout_images[0],
+        g=cutout_images[1],
+        r=cutout_images[2],
+        i=cutout_images[3],
+        z=cutout_images[4],
+        jpg_data=jpg_data,
+        ra=imaging_data['ra'],
+        dec=imaging_data['dec'],
+    )
 
     pu.verbose_print(verbose, "Done!")
 
