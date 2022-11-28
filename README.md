@@ -4,21 +4,17 @@ _Give Me A Galaxy! | Fast SDSS Galaxy Image Download_
 
 ---
 
-__Get a galaxy with 3 lines of code__
+GMAG is a simple and fast way to download and cutout SDSS images using multiprocessing. 
+It communicates directly with SDSS servers with SQL commands to get galaxy info and download images.
+Download speed is about <span style="color:#93CAED">**6x faster**</span> than the standard astroquery SDSS module 
+(see comparison [here](notebooks/Download_Time_Comparison.ipynb)).
+
 
 ```python
+# Download multi-band galaxy image data
 from gmag import sdss
 
-galaxy = sdss.get_random_galaxy()
-galaxy.show()
-```
-
-![output](https://user-images.githubusercontent.com/48139961/203444526-e9b367b4-2d9a-45e4-8147-4e50ac384e9c.png)
-
-__or, download galaxy muliband image data accelerated by multiprocessing__
-
-```python
-sdss.download_images('some_galaxies.fit')  # require ra and dec columns
+sdss.download_images('galaxies_coord_table.fit')
 
 # ---example outout---
 # Searching galaxies: 100%|██████████| 10/10 [00:02<00:00,  3.73obj/s]
@@ -28,6 +24,20 @@ sdss.download_images('some_galaxies.fit')  # require ra and dec columns
 # ...Saving info file at /images_2022-11-26_11-01-05/info.csv
 # ALL DONE!
 ```
+
+GMAG was originally intended to quickly get a random galaxy image (ugriz) in one line of code
+(you can tell by the naming "Give Me A Galaxy"). 
+Now the `download_images` function shown above is clearly more practical, 
+but the old function is still kept, 
+not intended for professional use, but as a fun little tool to get a random galaxy to play with.
+
+```python
+galaxy = sdss.get_random_galaxy()
+galaxy.show()
+```
+
+![output](https://user-images.githubusercontent.com/48139961/203444526-e9b367b4-2d9a-45e4-8147-4e50ac384e9c.png)
+
 
 ---
 
@@ -53,6 +63,8 @@ pip install gmag
 ### Download Galaxy Images
 
 <a name="download-galaxy-images"></a>
+
+<span style="color:#93CAED">_A tutorial notebook is available [here](notebooks/Tutorial_Download_Images.ipynb)._</span>
 
 Provide a table with `ra` and `dec` columns,
 and `gmag` will download galaxy multi-bands images for you accelerated by multiprocessing.
@@ -93,6 +105,8 @@ images_<YYYY-MM-DD>_<Hr-Min-Sec>
 ### Get a Random Galaxy
 
 <a name="get-a-random-galaxy"></a>
+
+<span style="color:#93CAED">_A tutorial notebook is available [here](notebooks/Tutorial_Get_Random_Galaxy.ipynb)._</span>
 
 ```python
 from gmag.sdss import get_random_galaxy
