@@ -2,12 +2,15 @@
 
 _Give Me A Galaxy! | Fast SDSS Galaxy Image Download_
 
+[Documentation](https://junyu474.github.io/GMAG/gmag/index.html) | 
+[Notebooks](https://github.com/Junyu474/GMAG/tree/main/notebooks)
+
 ---
 
 GMAG is a simple and fast way to download and cutout SDSS images using multiprocessing. 
 It communicates directly with SDSS servers with SQL commands to get galaxy info and download images.
 Download speed is about <span style="color:#93CAED">**6x faster**</span> than the standard astroquery SDSS module 
-(see comparison [here](notebooks/Download_Time_Comparison.ipynb)).
+(see comparison [here](https://github.com/Junyu474/GMAG/blob/main/notebooks/Download_Time_Comparison.ipynb)).
 
 
 ```python
@@ -64,7 +67,7 @@ pip install gmag
 
 <a name="download-galaxy-images"></a>
 
-<span style="color:#93CAED">_A tutorial notebook is available [here](notebooks/Tutorial_Download_Images.ipynb)._</span>
+<span style="color:#93CAED">_A tutorial notebook is available [here](https://github.com/Junyu474/GMAG/blob/main/notebooks/Tutorial_Download_Images.ipynb)._</span>
 
 Provide a table with `ra` and `dec` columns,
 and `gmag` will download galaxy multi-bands images for you accelerated by multiprocessing.
@@ -106,7 +109,7 @@ images_<YYYY-MM-DD>_<Hr-Min-Sec>
 
 <a name="get-a-random-galaxy"></a>
 
-<span style="color:#93CAED">_A tutorial notebook is available [here](notebooks/Tutorial_Get_Random_Galaxy.ipynb)._</span>
+<span style="color:#93CAED">_A tutorial notebook is available [here](https://github.com/Junyu474/GMAG/blob/main/notebooks/Tutorial_Get_Random_Galaxy.ipynb)._</span>
 
 ```python
 from gmag.sdss import get_random_galaxy
