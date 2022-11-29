@@ -1,9 +1,14 @@
 def verbose_print(verbose, *args, **kwargs):
     """Print if verbose is True
 
-    :param verbose: verbose flag
-    :param args: arguments to print
-    :param kwargs: keyword arguments to print
+    Parameters
+    ----------
+    verbose : `bool`
+        If True, print the message
+    *args
+        Arguments to pass to print
+    **kwargs
+        Keyword arguments to pass to print
     """
 
     if verbose:
@@ -13,9 +18,15 @@ def verbose_print(verbose, *args, **kwargs):
 def red(string):
     """Return string in red
 
-    :param string: string to return in red
+    Parameters
+    ----------
+    string : `str`
+        String to return in red
 
-    :return: string in red
+    Returns
+    -------
+    str
+        String in red
     """
 
     return "\033[91m{}\033[00m".format(string)
@@ -24,9 +35,15 @@ def red(string):
 def blue(string):
     """Return string in blue
 
-    :param string: string to return in blue
+    Parameters
+    ----------
+    string : `str`
+        String to return in blue
 
-    :return: string in blue
+    Returns
+    -------
+    str
+        String in blue
     """
 
     return "\033[94m{}\033[00m".format(string)
@@ -35,9 +52,15 @@ def blue(string):
 def bold(string):
     """Return string in bold
 
-    :param string: string to return in bold
+    Parameters
+    ----------
+    string : `str`
+        String to return in bold
 
-    :return: string in bold
+    Returns
+    -------
+    str
+        String in bold
     """
 
     return "\033[1m{}\033[00m".format(string)

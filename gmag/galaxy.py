@@ -6,25 +6,46 @@ from matplotlib import pyplot as plt
 
 @dataclass(frozen=True)
 class Galaxy:
-    """Galaxy class (read only)"""
+    """Galaxy class
+
+    Notes
+    -----
+    This class is used to store the information of a galaxy. All the attributes are read-only.
+    """
+
     objid: str
+    """SDSS DR17 ObjID"""
 
     u: np.ndarray
+    """u-band image"""
+
     g: np.ndarray
+    """g-band image"""
+
     r: np.ndarray
+    """r-band image"""
+
     i: np.ndarray
+    """i-band image"""
+
     z: np.ndarray
+    """z-band image"""
+
     jpg_data: np.ndarray
+    """JPG image data"""
 
     ra: float
+    """Right Ascension (deg)"""
+
     dec: float
+    """Declination (deg)"""
 
     def __repr__(self):
         return f"Galaxy[{self.objid}]"
 
     @property
     def data(self):
-        """Return the ugriz data of the galaxy"""
+        """The ugriz data of the galaxy (read-only)"""
         return np.array([self.u, self.g, self.r, self.i, self.z])
 
     def info(self):
@@ -34,7 +55,12 @@ class Galaxy:
               f"DEC(deg): {self.dec:>32.5f}")
 
     def preview(self):
-        """Show the preview jpg image of the galaxy with dpi=40"""
+        """Show the preview jpg image of the galaxy with dpi=40
+
+        See Also
+        --------
+        show
+        """
 
         plt.figure(dpi=40)
         plt.axis('off')
@@ -42,7 +68,12 @@ class Galaxy:
         plt.show()
 
     def show(self):
-        """Show the jpg image of the galaxy with dpi=100"""
+        """Show the jpg image of the galaxy with dpi=100
+
+        See Also
+        --------
+        preview
+        """
 
         plt.figure(dpi=100)
         plt.axis('off')
@@ -52,10 +83,21 @@ class Galaxy:
     def show_band(self, band, cmap='viridis', high_contrast=False, colorbar=False):
         """Show a band of the galaxy image
 
-        :param band: the band to show
-        :param cmap: the colormap to use
-        :param high_contrast: whether to use high contrast
-        :param colorbar: whether to show the colorbar
+        Parameters
+        ----------
+        band : `str`
+            The band to show
+        cmap : `str`, default='viridis'
+            The colormap to use
+        high_contrast : `bool`, default=False
+            Whether to use high contrast
+        colorbar : `bool`, default=False
+            Whether to show the colorbar
+
+        Raises
+        ------
+        ValueError
+            Raised if the band is not in ugriz
         """
 
         if band not in ['u', 'g', 'r', 'i', 'z']:
@@ -73,9 +115,14 @@ class Galaxy:
     def show_all_bands(self, cmap='viridis', high_contrast=False, colorbar=False):
         """Show all bands of the galaxy image
 
-        :param cmap: the colormap to use
-        :param high_contrast: whether to use high contrast
-        :param colorbar: whether to show the colorbar
+        Parameters
+        ----------
+        cmap : `str`, default='viridis'
+            The colormap to use
+        high_contrast : `bool`, default=False
+            Whether to use high contrast
+        colorbar : `bool`, default=False
+            Whether to show the colorbar
         """
 
         fig, axs = plt.subplots(1, 5, figsize=(15, 3))

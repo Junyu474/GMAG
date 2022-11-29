@@ -14,20 +14,29 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.table import Table as AstropyTable
 from astropy.wcs import WCS, FITSFixedWarning
-from tqdm.auto import tqdm
 from matplotlib import pyplot as plt
+from tqdm.auto import tqdm
 
-from .galaxy import Galaxy
 from . import _print_util as pu
+from .galaxy import Galaxy
 
 
 def get_random_galaxy(verbose=True):
-    """Get random galaxy from SDSS
+    """Get a random galaxy from SDSS
 
-    Note: If not running in a notebook, must run in __main__ to avoid multiprocessing issues
+    Parameters
+    ----------
+    verbose: `bool`, default=True
+        Whether to print progress
 
+    Returns
+    -------
+    galaxy: `.Galaxy`
+        Galaxy object
 
-    :param verbose: show verbose, defaults to True
+    Notes
+    -----
+    If not running in a notebook, must run in `__main__` to avoid multiprocessing issues
     """
 
     # Get a random galaxy objid
@@ -79,19 +88,43 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
                     name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True):
     """Read ra dec from file and download galaxy fits images
 
-    Note: If not running in a notebook, must run in __main__ to avoid multiprocessing issues
+    Parameters
+    ----------
+    file: `str` or `pathlib.Path`
+        File to read ra dec from
+    ra_col: `str`, default='ra'
+        Name of ra column
+    dec_col: `str`, default='dec'
+        Name of dec column
+    bands: `str`, default='ugriz'
+        Bands to download
+    max_search_radius: `float`, default=8
+        Maximum search radius in arcsec
+    cutout: `bool`, default=True
+        Whether to cutout images
+    name_col: `str`, default=None
+        Name of galaxy name column
+    num_workers: `int`, default=16
+        Number of workers to use
+    progress_bar: `bool`, default=True
+        Whether to show progress bar
+    verbose: `bool`, default=True
+        Whether to print progress
+    info_file: `bool`, default=True
+        Whether to save info file
 
-    :param file: file path, any format readable by astropy.table.Table, with columns ra and dec
-    :param ra_col: name of ra column, defaults to 'ra'
-    :param dec_col: name of dec column, defaults to 'dec'
-    :param bands: bands to download, can be a string (e.g. 'gri') or a list (e.g. ['g', 'r', 'i']), default is 'ugriz'
-    :param max_search_radius: max search radius in arcmimutes, defaults to 10
-    :param cutout: cutout images, defaults to True
-    :param name_col: name of name column, defaults to None
-    :param num_workers: number of workers for multiprocessing, defaults to 16
-    :param progress_bar: show progress bar, defaults to True
-    :param verbose: show verbose, defaults to False
-    :param info_file: create info file, defaults to True
+    Raises
+    ------
+    ValueError
+        Raised if bands is invalid
+    OSError
+        Raised if can not read file
+    KeyError
+        Raised if ra or dec column is not found in file
+
+    Notes
+    -----
+    If not running in a notebook, must run in `__main__` to avoid multiprocessing issues
     """
 
     # 1. Check if bands are valid
@@ -210,8 +243,9 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
                 if gal is None:
                     writer.writerow([orig_ra_list[i], orig_dec_list[i], False, None, None, None, None, None])
                 else:
-                    writer.writerow([orig_ra_list[i], orig_dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
-                                     cutout_shapes[i]])
+                    writer.writerow(
+                        [orig_ra_list[i], orig_dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
+                         cutout_shapes[i]])
 
     pu.verbose_print(verbose, pu.bold(f"ALL DONE!"))
 
@@ -219,7 +253,9 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
 def __get_random_galaxy_objid():
     """Request random galaxy from SDSS in a random field
 
-    :return: galaxy objid
+    Returns
+    -------
+    objid : `int`
     """
 
     # Get random objid
@@ -235,9 +271,14 @@ def __get_random_galaxy_objid():
 def __get_galaxy_imaging_data(objid):
     """Get imaging data for a given galaxy objid
 
-    :param objid: galaxy ssds dr17 objid
+    Parameters
+    ----------
+    objid : `int`
 
-    :return: dict with imaging data (run, camcol, field, ra, dec, petroRad_r)
+    Returns
+    -------
+    data : `dict`
+        Dictionary with keys 'run', 'camcol', 'field', 'ra', 'dec', 'objid', 'petroRad_r'
     """
 
     # Get imaging data
@@ -251,9 +292,19 @@ def __get_galaxy_imaging_data(objid):
 def __get_galaxy_jpg_image(ra, dec, petro_r):
     """Get jpg image for a given galaxy imaging data
 
-    :param ra: right ascension, in degrees
-    :param dec: declination, in degrees
-    :param petro_r: Petrosian radius, in arcsec
+    Parameters
+    ----------
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    petro_r : `float`
+        petrosian radius in arcsec
+
+    Returns
+    -------
+    image : `numpy.ndarray`
+        Image data as numpy array
     """
 
     # Compute scale, defined as "/pix
@@ -272,12 +323,17 @@ def __get_galaxy_jpg_image(ra, dec, petro_r):
 def __get_url_from_imaging_data(run, camcol, field, band):
     """Get fits image url from imaging data
 
-    :param run: run
-    :param camcol: camcol
-    :param field: field
-    :param band: band
+    Parameters
+    ----------
+    run : `int`
+    camcol : `int`
+    field : `int`
+    band : `str`
+        'u', 'g', 'r', 'i', 'z'
 
-    :return: fits image url
+    Returns
+    -------
+    url : `str`
     """
 
     url = f"http://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/" \
@@ -288,12 +344,21 @@ def __get_url_from_imaging_data(run, camcol, field, band):
 def __cutout_galaxy_fits_image(fits_file, ra, dec, petro_r):
     """Cutout galaxy fits image
 
-    :param fits_file: fits file path, can be a local file or an url
-    :param ra: right ascension of the target, in degrees
-    :param dec: declination of the target, in degrees
-    :param petro_r: Petrosian radius of the target, in arcsec
+    Parameters
+    ----------
+    fits_file : `str`
+        Path to fits file, can be url or local path
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    petro_r : `float`
+        petrosian radius in arcsec
 
-    :return: cutout image data in numpy array
+    Returns
+    -------
+    cutout : `numpy.ndarray`
+        Cutout image data as numpy array
     """
 
     r = petro_r / 3600  # convert to degrees
@@ -324,10 +389,7 @@ def __cutout_galaxy_fits_image(fits_file, ra, dec, petro_r):
 
 
 def __search_nearby_galaxy_wrapper(args):
-    """Wrapper for __search_nearby_galaxy for multiprocessing
-
-    :param args: tuple of ra, dec, max_search_radius, verbose
-    """
+    """Wrapper for __search_nearby_galaxy for multiprocessing"""
 
     return __search_nearby_galaxy(*args)
 
@@ -339,12 +401,21 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
     Start with a search radius of 1 arcmin and double the radius until over the max_search_radius.
     If max_search_radius is not power of 2, try one last search at max_search_radius.
 
-    :param ra: right ascension, in degrees
-    :param dec: declination, in degrees
-    :param max_search_radius: maximum search radius, in arcmin
-    :param verbose: print message if not found, defaults to False
+    Parameters
+    ----------
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    max_search_radius : `float`
+        maximum search radius in arcmin
+    verbose : `bool`, default=False
+        print verbose output
 
-    :return: (objid, run, camcol, field, ra, dec, petroRad_r, petroRadErr_r) if found, None otherwise
+    Returns
+    -------
+    gal : `dict` or `None` if no galaxy found
+        Dictionary with keys 'objid', 'run', 'camcol', 'field', 'ra', 'dec', 'petroRad_r', 'petroRadErr_r'
     """
 
     url = "http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=" \
@@ -372,10 +443,7 @@ def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
 
 
 def __download_fits_image_wrapper(args):
-    """Wrapper for __download_fits_image for multiprocessing
-
-    :param args: tuple of url, output_dir
-    """
+    """Wrapper for __download_fits_image for multiprocessing"""
 
     return __download_fits_image(*args)
 
@@ -383,8 +451,12 @@ def __download_fits_image_wrapper(args):
 def __download_fits_image(fits_url, file_path):
     """Download fits image from url to file_path
 
-    :param fits_url: fits image url
-    :param file_path: file path to save the fits image
+    Parameters
+    ----------
+    fits_url : `str`
+        url to fits image
+    file_path : `str`
+        path to save fits image
     """
 
     # Download fits image
@@ -400,10 +472,7 @@ def __download_fits_image(fits_url, file_path):
 
 
 def __download_fits_image_with_cutout_wrapper(args):
-    """Wrapper for __download_fits_image_with_cutout for multiprocessing
-
-    :param args: tuple of fits_url, output_dir, ra, dec, petro_r
-    """
+    """Wrapper for __download_fits_image_with_cutout for multiprocessing"""
 
     return __download_fits_image_with_cutout(*args)
 
@@ -411,13 +480,23 @@ def __download_fits_image_with_cutout_wrapper(args):
 def __download_fits_image_with_cutout(fits_url, file_path, ra, dec, petro_r):
     """Download fits image from url to file_path and cutout galaxy
 
-    :param fits_url: fits image url
-    :param file_path: file path to save the fits image
-    :param ra: right ascension of the target, in degrees
-    :param dec: declination of the target, in degrees
-    :param petro_r: Petrosian radius of the target, in arcsec
+    Parameters
+    ----------
+    fits_url : `str`
+        url to fits image
+    file_path : `str`
+        path to save fits image
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    petro_r : `float`
+        petrosian radius in arcsec
 
-    :return: cutout image shape
+    Returns
+    -------
+    cutout : `tuple`
+        2d cutout shape
     """
 
     # Get cutout image np array
@@ -428,4 +507,3 @@ def __download_fits_image_with_cutout(fits_url, file_path, ra, dec, petro_r):
     hdu.writeto(file_path)
 
     return cutout_arr.shape
-
