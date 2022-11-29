@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>gmag.sdss API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gmag.sdss</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import bz2
+import csv
+import pathlib
+import shutil
+import warnings
+from datetime import datetime
+from multiprocessing import Pool
+from urllib.request import urlopen
+
+import numpy as np
+import requests
+from PIL import Image
+from astropy.coordinates import SkyCoord
+from astropy.io import fits
+from astropy.table import Table as AstropyTable
+from astropy.wcs import WCS, FITSFixedWarning
+from matplotlib import pyplot as plt
+from tqdm.auto import tqdm
+
+from . import _print_util as pu
+from .galaxy import Galaxy
+
+
+def get_random_galaxy(verbose=True):
+    &#34;&#34;&#34;Get a random galaxy from SDSS
+
+    Parameters
+    ----------
+    verbose: `bool`, default=True
+        Whether to print progress
+
+    Returns
+    -------
+    galaxy: `.Galaxy`
+        Galaxy object
+
+    Notes
+    -----
+    If not running in a notebook, must run in `__main__` to avoid multiprocessing issues
+    &#34;&#34;&#34;
+
+    # Get a random galaxy objid
+    objid = __get_random_galaxy_objid()
+
+    # Get imaging data
+    imaging_data = __get_galaxy_imaging_data(objid)
+
+    pu.verbose_print(verbose, &#34;Fetching...&#34;, end=&#39;&#39;)
+
+    # Get jpg image
+    jpg_data = __get_galaxy_jpg_image(imaging_data[&#39;ra&#39;], imaging_data[&#39;dec&#39;], imaging_data[&#39;petroRad_r&#39;])
+
+    if verbose:
+        print(&#34;\rStill fetching ugriz data..., here is a preview:&#34;)
+        plt.figure(dpi=40)
+        plt.axis(&#39;off&#39;)
+        plt.imshow(jpg_data)
+        plt.show()
+
+    # Get fits images urls
+    fits_urls = [__get_url_from_imaging_data(imaging_data[&#39;run&#39;], imaging_data[&#39;camcol&#39;], imaging_data[&#39;field&#39;], band)
+                 for band in &#39;ugriz&#39;]
+
+    # Get cutout fits images data using multiprocessing
+    params = [(url, imaging_data[&#39;ra&#39;], imaging_data[&#39;dec&#39;], imaging_data[&#39;petroRad_r&#39;])
+              for url in fits_urls]
+    with Pool(5) as p:
+        cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
+
+    galaxy = Galaxy(
+        objid=str(objid),
+        u=cutout_images[0],
+        g=cutout_images[1],
+        r=cutout_images[2],
+        i=cutout_images[3],
+        z=cutout_images[4],
+        jpg_data=jpg_data,
+        ra=imaging_data[&#39;ra&#39;],
+        dec=imaging_data[&#39;dec&#39;],
+    )
+
+    pu.verbose_print(verbose, &#34;Done!&#34;)
+
+    return galaxy
+
+
+def download_images(file, ra_col=&#39;ra&#39;, dec_col=&#39;dec&#39;, bands=&#39;ugriz&#39;, max_search_radius=8, cutout=True,
+                    name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True):
+    &#34;&#34;&#34;Read ra dec from file and download galaxy fits images
+
+    Parameters
+    ----------
+    file: `str` or `pathlib.Path`
+        File to read ra dec from
+    ra_col: `str`, default=&#39;ra&#39;
+        Name of ra column
+    dec_col: `str`, default=&#39;dec&#39;
+        Name of dec column
+    bands: `str`, default=&#39;ugriz&#39;
+        Bands to download
+    max_search_radius: `float`, default=8
+        Maximum search radius in arcmin
+    cutout: `bool`, default=True
+        Whether to cutout images
+    name_col: `str`, default=None
+        Name of galaxy name column
+    num_workers: `int`, default=16
+        Number of workers to use
+    progress_bar: `bool`, default=True
+        Whether to show progress bar
+    verbose: `bool`, default=True
+        Whether to print progress
+    info_file: `bool`, default=True
+        Whether to save info file
+
+    Raises
+    ------
+    ValueError
+        Raised if bands is invalid
+    OSError
+        Raised if can not read file
+    KeyError
+        Raised if ra or dec column is not found in file
+
+    Notes
+    -----
+    If not running in a notebook, must run in `__main__` to avoid multiprocessing issues
+    &#34;&#34;&#34;
+
+    # 1. Check if bands are valid
+    if isinstance(bands, str):
+        bands = list(bands)
+    elif not isinstance(bands, list):
+        raise ValueError(&#34;bands must be a string or a list&#34;)
+
+    for band in bands:
+        if band not in &#39;ugriz&#39;:
+            raise ValueError(f&#34;Invalid band {band}&#34;)
+
+    # 2. Try to open fits file
+    try:
+        table = AstropyTable.read(file)
+    except OSError:
+        raise OSError(f&#34;Could not open file {file}&#34;)
+
+    # 3. Try to get ra and dec columns
+    try:
+        orig_ra_list = table[ra_col]
+        orig_dec_list = table[dec_col]
+    except KeyError:
+        raise KeyError(f&#34;Could not find ra column &#39;{ra_col}&#39; or dec column &#39;{dec_col}&#39; in file {file}&#34;)
+
+    # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
+    search_args = list(zip(orig_ra_list, orig_dec_list, [max_search_radius] * len(orig_ra_list)))
+    with Pool(num_workers) as pool:
+        # galaxies is a list of tuples (ra, dec, objid, run, camcol, field), can be None, in order of original table
+        galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, search_args),
+                             total=len(search_args), disable=not progress_bar,
+                             desc=&#34;Searching galaxies&#34;, unit=&#34;obj&#34;))
+
+    found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
+
+    pu.verbose_print(verbose, f&#34;...Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies&#34;)
+
+    # 5. Try to get name column, if None, use rowid_objid
+    if name_col is not None:
+        try:
+            names = table[name_col]
+            # Replace empty names with unknown_rowid
+            names = [name if name else f&#34;unknown_rowid_{i}&#34; for i, name in enumerate(names)]
+            # Check if names are unique
+            if len(set(names)) != len(names):
+                raise ValueError()
+        except KeyError:
+            print(pu.red(f&#34;Could not find name column &#39;{name_col}&#39; in file {file}, using rowid_objid instead&#34;))
+            names = [f&#34;{i}_{g[&#39;objid&#39;]}&#34; if g is not None else None for i, g in enumerate(galaxies)]
+        except ValueError:
+            print(pu.red(f&#34;Names are not unique, using rowid_objid instead&#34;))
+            names = [f&#34;{i}_{g[&#39;objid&#39;]}&#34; if g is not None else None for i, g in enumerate(galaxies)]
+    else:
+        names = [f&#34;{i}_{g[&#39;objid&#39;]}&#34; if g is not None else None for i, g in enumerate(galaxies)]
+
+    # 6. Create output parent directory
+    parent_dir = pathlib.Path.cwd() / f&#34;images_{datetime.now().strftime(&#39;%Y-%m-%d_%H-%M-%S&#39;)}&#34;
+    parent_dir.mkdir()
+    pu.verbose_print(verbose, f&#34;...Created directories for images at {pu.blue(parent_dir)}&#34;)
+
+    # 7. Prepare download args for multiprocessing, create output directories
+    download_args = []
+    for i, gal in enumerate(galaxies):
+        if gal is None:
+            continue
+
+        target_dir = parent_dir / names[i]
+        target_dir.mkdir()
+        for band in bands:
+            url = __get_url_from_imaging_data(gal[&#39;run&#39;], gal[&#39;camcol&#39;], gal[&#39;field&#39;], band)
+            file_path = target_dir / f&#34;{band}.fits&#34;
+            if cutout:
+                download_args.append((url, target_dir / file_path, gal[&#39;ra&#39;], gal[&#39;dec&#39;], gal[&#39;petroRad_r&#39;]))
+            else:
+                download_args.append((url, target_dir / file_path))
+
+    # 8. Download images # TODO: flag if petroRad_err is -1000
+    download_func = __download_fits_image_with_cutout_wrapper if cutout else __download_fits_image_wrapper
+    with Pool(num_workers) as pool:
+        return_val = list(tqdm(pool.imap(download_func, download_args),
+                               total=len(download_args), disable=not progress_bar,
+                               desc=&#34;Downloading images&#34;, unit=&#34;img&#34;))
+
+    # 9. Create cutout shape column based on return value
+    if cutout:
+        # return_val is list of shapes in order, same galaxy will have duplicate shapes for each band, only keep one
+        found_cutout_shapes = [shape for i, shape in enumerate(return_val) if i % len(bands) == 0]
+        # Create column for cutout shape including not found galaxies
+        cutout_shapes = [None] * len(galaxies)
+        for i, shape in zip(found_gal_row_ids, found_cutout_shapes):
+            cutout_shapes[i] = shape
+    else:
+        cutout_shapes = [&#39;Uncut&#39;] * len(galaxies)
+
+    # 10. Save info file
+    if info_file:
+        pu.verbose_print(verbose, f&#34;...Saving info file at {pu.blue(parent_dir / &#39;info.csv&#39;)}&#34;)
+        with open(parent_dir / &#39;info.csv&#39;, &#39;w&#39;) as f:
+            # Write comments on top
+            f.write(f&#34;# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n&#34;)
+            if cutout:
+                f.write(f&#34;# Images are cutout based on galaxy&#39;s petrosian radius\n&#34;)
+            else:
+                f.write(f&#34;# Images are standard SDSS frame (not cropped)\n&#34;)
+            f.write(f&#34;# -- Bands: {&#39; &#39;.join(bands)}\n&#34;)
+            f.write(f&#34;# -- Max search radius: {max_search_radius} arcmin\n&#34;)
+            f.write(f&#34;{&#39;-&#39; * 40}\n&#34;)
+
+            writer = csv.writer(f)
+
+            # Write header
+            writer.writerow([&#39;ra_orig&#39;, &#39;dec_orig&#39;, &#39;found&#39;, &#39;ra&#39;, &#39;dec&#39;, &#39;dir_name&#39;, &#39;objid&#39;, &#39;cutout_shape&#39;])
+
+            # Write data
+            for i, gal in enumerate(galaxies):
+                if gal is None:
+                    writer.writerow([orig_ra_list[i], orig_dec_list[i], False, None, None, None, None, None])
+                else:
+                    writer.writerow(
+                        [orig_ra_list[i], orig_dec_list[i], True, gal[&#39;ra&#39;], gal[&#39;dec&#39;], names[i], gal[&#39;objid&#39;],
+                         cutout_shapes[i]])
+
+    pu.verbose_print(verbose, pu.bold(f&#34;ALL DONE!&#34;))
+
+
+def __get_random_galaxy_objid():
+    &#34;&#34;&#34;Request random galaxy from SDSS in a random field
+
+    Returns
+    -------
+    objid : `int`
+    &#34;&#34;&#34;
+
+    # Get random objid
+    req = requests.get(f&#34;http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=&#34;
+                       f&#34;SELECT TOP 1 g.objid FROM Galaxy AS g &#34;
+                       f&#34;JOIN ZooNoSpec as z ON g.objid = z.objid &#34;
+                       f&#34;WHERE g.clean = 1 AND g.petroRad_r&gt;12 AND g.petroRadErr_r!=-1000 &#34;
+                       f&#34;ORDER BY NEWID()&#34;)
+
+    return req.json()[0][&#39;Rows&#39;][0][&#39;objid&#39;]
+
+
+def __get_galaxy_imaging_data(objid):
+    &#34;&#34;&#34;Get imaging data for a given galaxy objid
+
+    Parameters
+    ----------
+    objid : `int`
+
+    Returns
+    -------
+    data : `dict`
+        Dictionary with keys &#39;run&#39;, &#39;camcol&#39;, &#39;field&#39;, &#39;ra&#39;, &#39;dec&#39;, &#39;objid&#39;, &#39;petroRad_r&#39;
+    &#34;&#34;&#34;
+
+    # Get imaging data
+    req = requests.get(f&#34;http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=&#34;
+                       f&#34;SELECT run, camcol, field, ra, dec, petroRad_r FROM Galaxy &#34;
+                       f&#34;WHERE objid = {objid}&#34;)
+
+    return req.json()[0][&#39;Rows&#39;][0]
+
+
+def __get_galaxy_jpg_image(ra, dec, petro_r):
+    &#34;&#34;&#34;Get jpg image for a given galaxy imaging data
+
+    Parameters
+    ----------
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    petro_r : `float`
+        petrosian radius in arcsec
+
+    Returns
+    -------
+    image : `numpy.ndarray`
+        Image data as numpy array
+    &#34;&#34;&#34;
+
+    # Compute scale, defined as &#34;/pix
+    # Fix image size 2*1.25*radius arcsec
+    img_size = 256
+    scale = 2 * 1.25 * petro_r / img_size
+
+    url = f&#34;http://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?&#34; \
+          f&#34;ra={ra}&amp;dec={dec}&amp;scale={scale}&amp;width={img_size}&amp;height={img_size}&#34;
+
+    # Read jpg image url into numpy array
+    jpg_data = np.asarray(Image.open(urlopen(url)))
+    return jpg_data
+
+
+def __get_url_from_imaging_data(run, camcol, field, band):
+    &#34;&#34;&#34;Get fits image url from imaging data
+
+    Parameters
+    ----------
+    run : `int`
+    camcol : `int`
+    field : `int`
+    band : `str`
+        &#39;u&#39;, &#39;g&#39;, &#39;r&#39;, &#39;i&#39;, &#39;z&#39;
+
+    Returns
+    -------
+    url : `str`
+    &#34;&#34;&#34;
+
+    url = f&#34;http://dr17.sdss.org/sas/dr17/eboss/photoObj/frames/301/&#34; \
+          f&#34;{run}/{camcol}/frame-{band}-{run:06d}-{camcol}-{field:04d}.fits.bz2&#34;
+    return url
+
+
+def __cutout_galaxy_fits_image(fits_file, ra, dec, petro_r):
+    &#34;&#34;&#34;Cutout galaxy fits image
+
+    Parameters
+    ----------
+    fits_file : `str`
+        Path to fits file, can be url or local path
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    petro_r : `float`
+        petrosian radius in arcsec
+
+    Returns
+    -------
+    cutout : `numpy.ndarray`
+        Cutout image data as numpy array
+    &#34;&#34;&#34;
+
+    r = petro_r / 3600  # convert to degrees
+
+    # Read fits file
+    hdu = fits.open(fits_file, cache=False)
+
+    # Read wcs, ignore warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter(&#34;ignore&#34;, category=FITSFixedWarning)
+        wcs = WCS(hdu[0].header)
+
+    # Compute cutout size
+    coord = SkyCoord(ra, dec, unit=&#39;deg&#39;)
+    edge_coord = SkyCoord(ra + r, dec + r, unit=&#39;deg&#39;)
+    x, y = wcs.world_to_pixel(coord)
+    x_edge, y_edge = wcs.world_to_pixel(edge_coord)
+    # radius is max of x and y, cutout radius is 1.25*radius rounded up to nearest 10
+    radius = max(abs(x - x_edge), abs(y - y_edge))
+    cutout_radius = int(np.ceil(1.25 * radius / 10) * 10)
+
+    # Get cutout, indices in integer
+    min_y, max_y = int(y - cutout_radius), int(y + cutout_radius)
+    min_x, max_x = int(x - cutout_radius), int(x + cutout_radius)
+    cutout_image = hdu[0].data[min_y:max_y, min_x:max_x]
+
+    return cutout_image
+
+
+def __search_nearby_galaxy_wrapper(args):
+    &#34;&#34;&#34;Wrapper for __search_nearby_galaxy for multiprocessing&#34;&#34;&#34;
+
+    return __search_nearby_galaxy(*args)
+
+
+def __search_nearby_galaxy(ra, dec, max_search_radius, verbose=False):
+    &#34;&#34;&#34;Search for a galaxy by ra dec and return galaxy data
+
+    Use the fGetNearbyObjEq function from the SDSS SkyServer API.
+    Start with a search radius of 1 arcmin and double the radius until over the max_search_radius.
+    If max_search_radius is not power of 2, try one last search at max_search_radius.
+
+    Parameters
+    ----------
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    max_search_radius : `float`
+        maximum search radius in arcmin
+    verbose : `bool`, default=False
+        print verbose output
+
+    Returns
+    -------
+    gal : `dict` or `None` if no galaxy found
+        Dictionary with keys &#39;objid&#39;, &#39;run&#39;, &#39;camcol&#39;, &#39;field&#39;, &#39;ra&#39;, &#39;dec&#39;, &#39;petroRad_r&#39;, &#39;petroRadErr_r&#39;
+    &#34;&#34;&#34;
+
+    url = &#34;http://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=&#34; \
+          &#34;SELECT TOP 1 G.objid, G.run, G.camcol, G.field, G.ra, G.dec, G.petroRad_r, G.petroRadErr_r &#34; \
+          &#34;FROM Galaxy as G JOIN dbo.fGetNearbyObjEq({}, {}, {}) AS GN &#34; \
+          &#34;ON G.objID = GN.objID &#34; \
+          &#34;ORDER BY GN.distance&#34;
+
+    search_radius = 1
+    while search_radius &lt; max_search_radius:
+        req = requests.get(url.format(ra, dec, search_radius))
+        if req.json()[0][&#39;Rows&#39;]:
+            return req.json()[0][&#39;Rows&#39;][0]
+        search_radius *= 2
+
+    # Try one last search at max_search_radius
+    if search_radius * 2 != max_search_radius:
+        req = requests.get(url.format(ra, dec, max_search_radius))
+        if req.json()[0][&#39;Rows&#39;]:
+            return req.json()[0][&#39;Rows&#39;][0]
+
+    pu.verbose_print(verbose, f&#34;No nearby galaxy found within {max_search_radius} arcmin&#34;)
+
+    return None
+
+
+def __download_fits_image_wrapper(args):
+    &#34;&#34;&#34;Wrapper for __download_fits_image for multiprocessing&#34;&#34;&#34;
+
+    return __download_fits_image(*args)
+
+
+def __download_fits_image(fits_url, file_path):
+    &#34;&#34;&#34;Download fits image from url to file_path
+
+    Parameters
+    ----------
+    fits_url : `str`
+        url to fits image
+    file_path : `str`
+        path to save fits image
+    &#34;&#34;&#34;
+
+    # Download fits image
+    with urlopen(fits_url) as response, open(f&#34;{file_path}.bz2&#34;, &#39;wb&#39;) as out_file:
+        shutil.copyfileobj(response, out_file)
+
+    # Decompress
+    with bz2.open(f&#34;{file_path}.bz2&#34;, &#39;rb&#39;) as in_file, open(file_path, &#39;wb&#39;) as out_file:
+        shutil.copyfileobj(in_file, out_file)
+
+    # Remove tmp file
+    pathlib.Path(f&#34;{file_path}.bz2&#34;).unlink()
+
+
+def __download_fits_image_with_cutout_wrapper(args):
+    &#34;&#34;&#34;Wrapper for __download_fits_image_with_cutout for multiprocessing&#34;&#34;&#34;
+
+    return __download_fits_image_with_cutout(*args)
+
+
+def __download_fits_image_with_cutout(fits_url, file_path, ra, dec, petro_r):
+    &#34;&#34;&#34;Download fits image from url to file_path and cutout galaxy
+
+    Parameters
+    ----------
+    fits_url : `str`
+        url to fits image
+    file_path : `str`
+        path to save fits image
+    ra : `float`
+        right ascension in degrees
+    dec : `float`
+        declination in degrees
+    petro_r : `float`
+        petrosian radius in arcsec
+
+    Returns
+    -------
+    cutout : `tuple`
+        2d cutout shape
+    &#34;&#34;&#34;
+
+    # Get cutout image np array
+    cutout_arr = __cutout_galaxy_fits_image(fits_url, ra, dec, petro_r)
+
+    # Save cutout image as fits
+    hdu = fits.PrimaryHDU(cutout_arr)
+    hdu.writeto(file_path)
+
+    return cutout_arr.shape</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gmag.sdss.download_images"><code class="name flex">
+<span>def <span class="ident">download_images</span></span>(<span>file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_radius=8, cutout=True, name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read ra dec from file and download galaxy fits images</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file</code></strong> :&ensp;<code>str</code> or <code>pathlib.Path</code></dt>
+<dd>File to read ra dec from</dd>
+<dt><strong><code>ra_col</code></strong> :&ensp;<code>str</code>, default=<code>'ra'</code></dt>
+<dd>Name of ra column</dd>
+<dt><strong><code>dec_col</code></strong> :&ensp;<code>str</code>, default=<code>'dec'</code></dt>
+<dd>Name of dec column</dd>
+<dt><strong><code>bands</code></strong> :&ensp;<code>str</code>, default=<code>'ugriz'</code></dt>
+<dd>Bands to download</dd>
+<dt><strong><code>max_search_radius</code></strong> :&ensp;<code>float</code>, default=<code>8</code></dt>
+<dd>Maximum search radius in arcmin</dd>
+<dt><strong><code>cutout</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Whether to cutout images</dd>
+<dt><strong><code>name_col</code></strong> :&ensp;<code>str</code>, default=<code>None</code></dt>
+<dd>Name of galaxy name column</dd>
+<dt><strong><code>num_workers</code></strong> :&ensp;<code>int</code>, default=<code>16</code></dt>
+<dd>Number of workers to use</dd>
+<dt><strong><code>progress_bar</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Whether to show progress bar</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Whether to print progress</dd>
+<dt><strong><code>info_file</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Whether to save info file</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>Raised if bands is invalid</dd>
+<dt><code>OSError</code></dt>
+<dd>Raised if can not read file</dd>
+<dt><code>KeyError</code></dt>
+<dd>Raised if ra or dec column is not found in file</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If not running in a notebook, must run in <code>__main__</code> to avoid multiprocessing issues</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def download_images(file, ra_col=&#39;ra&#39;, dec_col=&#39;dec&#39;, bands=&#39;ugriz&#39;, max_search_radius=8, cutout=True,
+                    name_col=None, num_workers=16, progress_bar=True, verbose=True, info_file=True):
+    &#34;&#34;&#34;Read ra dec from file and download galaxy fits images
+
+    Parameters
+    ----------
+    file: `str` or `pathlib.Path`
+        File to read ra dec from
+    ra_col: `str`, default=&#39;ra&#39;
+        Name of ra column
+    dec_col: `str`, default=&#39;dec&#39;
+        Name of dec column
+    bands: `str`, default=&#39;ugriz&#39;
+        Bands to download
+    max_search_radius: `float`, default=8
+        Maximum search radius in arcmin
+    cutout: `bool`, default=True
+        Whether to cutout images
+    name_col: `str`, default=None
+        Name of galaxy name column
+    num_workers: `int`, default=16
+        Number of workers to use
+    progress_bar: `bool`, default=True
+        Whether to show progress bar
+    verbose: `bool`, default=True
+        Whether to print progress
+    info_file: `bool`, default=True
+        Whether to save info file
+
+    Raises
+    ------
+    ValueError
+        Raised if bands is invalid
+    OSError
+        Raised if can not read file
+    KeyError
+        Raised if ra or dec column is not found in file
+
+    Notes
+    -----
+    If not running in a notebook, must run in `__main__` to avoid multiprocessing issues
+    &#34;&#34;&#34;
+
+    # 1. Check if bands are valid
+    if isinstance(bands, str):
+        bands = list(bands)
+    elif not isinstance(bands, list):
+        raise ValueError(&#34;bands must be a string or a list&#34;)
+
+    for band in bands:
+        if band not in &#39;ugriz&#39;:
+            raise ValueError(f&#34;Invalid band {band}&#34;)
+
+    # 2. Try to open fits file
+    try:
+        table = AstropyTable.read(file)
+    except OSError:
+        raise OSError(f&#34;Could not open file {file}&#34;)
+
+    # 3. Try to get ra and dec columns
+    try:
+        orig_ra_list = table[ra_col]
+        orig_dec_list = table[dec_col]
+    except KeyError:
+        raise KeyError(f&#34;Could not find ra column &#39;{ra_col}&#39; or dec column &#39;{dec_col}&#39; in file {file}&#34;)
+
+    # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
+    search_args = list(zip(orig_ra_list, orig_dec_list, [max_search_radius] * len(orig_ra_list)))
+    with Pool(num_workers) as pool:
+        # galaxies is a list of tuples (ra, dec, objid, run, camcol, field), can be None, in order of original table
+        galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, search_args),
+                             total=len(search_args), disable=not progress_bar,
+                             desc=&#34;Searching galaxies&#34;, unit=&#34;obj&#34;))
+
+    found_gal_row_ids = [i for i, g in enumerate(galaxies) if g is not None]
+
+    pu.verbose_print(verbose, f&#34;...Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies&#34;)
+
+    # 5. Try to get name column, if None, use rowid_objid
+    if name_col is not None:
+        try:
+            names = table[name_col]
+            # Replace empty names with unknown_rowid
+            names = [name if name else f&#34;unknown_rowid_{i}&#34; for i, name in enumerate(names)]
+            # Check if names are unique
+            if len(set(names)) != len(names):
+                raise ValueError()
+        except KeyError:
+            print(pu.red(f&#34;Could not find name column &#39;{name_col}&#39; in file {file}, using rowid_objid instead&#34;))
+            names = [f&#34;{i}_{g[&#39;objid&#39;]}&#34; if g is not None else None for i, g in enumerate(galaxies)]
+        except ValueError:
+            print(pu.red(f&#34;Names are not unique, using rowid_objid instead&#34;))
+            names = [f&#34;{i}_{g[&#39;objid&#39;]}&#34; if g is not None else None for i, g in enumerate(galaxies)]
+    else:
+        names = [f&#34;{i}_{g[&#39;objid&#39;]}&#34; if g is not None else None for i, g in enumerate(galaxies)]
+
+    # 6. Create output parent directory
+    parent_dir = pathlib.Path.cwd() / f&#34;images_{datetime.now().strftime(&#39;%Y-%m-%d_%H-%M-%S&#39;)}&#34;
+    parent_dir.mkdir()
+    pu.verbose_print(verbose, f&#34;...Created directories for images at {pu.blue(parent_dir)}&#34;)
+
+    # 7. Prepare download args for multiprocessing, create output directories
+    download_args = []
+    for i, gal in enumerate(galaxies):
+        if gal is None:
+            continue
+
+        target_dir = parent_dir / names[i]
+        target_dir.mkdir()
+        for band in bands:
+            url = __get_url_from_imaging_data(gal[&#39;run&#39;], gal[&#39;camcol&#39;], gal[&#39;field&#39;], band)
+            file_path = target_dir / f&#34;{band}.fits&#34;
+            if cutout:
+                download_args.append((url, target_dir / file_path, gal[&#39;ra&#39;], gal[&#39;dec&#39;], gal[&#39;petroRad_r&#39;]))
+            else:
+                download_args.append((url, target_dir / file_path))
+
+    # 8. Download images # TODO: flag if petroRad_err is -1000
+    download_func = __download_fits_image_with_cutout_wrapper if cutout else __download_fits_image_wrapper
+    with Pool(num_workers) as pool:
+        return_val = list(tqdm(pool.imap(download_func, download_args),
+                               total=len(download_args), disable=not progress_bar,
+                               desc=&#34;Downloading images&#34;, unit=&#34;img&#34;))
+
+    # 9. Create cutout shape column based on return value
+    if cutout:
+        # return_val is list of shapes in order, same galaxy will have duplicate shapes for each band, only keep one
+        found_cutout_shapes = [shape for i, shape in enumerate(return_val) if i % len(bands) == 0]
+        # Create column for cutout shape including not found galaxies
+        cutout_shapes = [None] * len(galaxies)
+        for i, shape in zip(found_gal_row_ids, found_cutout_shapes):
+            cutout_shapes[i] = shape
+    else:
+        cutout_shapes = [&#39;Uncut&#39;] * len(galaxies)
+
+    # 10. Save info file
+    if info_file:
+        pu.verbose_print(verbose, f&#34;...Saving info file at {pu.blue(parent_dir / &#39;info.csv&#39;)}&#34;)
+        with open(parent_dir / &#39;info.csv&#39;, &#39;w&#39;) as f:
+            # Write comments on top
+            f.write(f&#34;# Found {len(found_gal_row_ids)} out of {len(galaxies)} galaxies in {file}\n&#34;)
+            if cutout:
+                f.write(f&#34;# Images are cutout based on galaxy&#39;s petrosian radius\n&#34;)
+            else:
+                f.write(f&#34;# Images are standard SDSS frame (not cropped)\n&#34;)
+            f.write(f&#34;# -- Bands: {&#39; &#39;.join(bands)}\n&#34;)
+            f.write(f&#34;# -- Max search radius: {max_search_radius} arcmin\n&#34;)
+            f.write(f&#34;{&#39;-&#39; * 40}\n&#34;)
+
+            writer = csv.writer(f)
+
+            # Write header
+            writer.writerow([&#39;ra_orig&#39;, &#39;dec_orig&#39;, &#39;found&#39;, &#39;ra&#39;, &#39;dec&#39;, &#39;dir_name&#39;, &#39;objid&#39;, &#39;cutout_shape&#39;])
+
+            # Write data
+            for i, gal in enumerate(galaxies):
+                if gal is None:
+                    writer.writerow([orig_ra_list[i], orig_dec_list[i], False, None, None, None, None, None])
+                else:
+                    writer.writerow(
+                        [orig_ra_list[i], orig_dec_list[i], True, gal[&#39;ra&#39;], gal[&#39;dec&#39;], names[i], gal[&#39;objid&#39;],
+                         cutout_shapes[i]])
+
+    pu.verbose_print(verbose, pu.bold(f&#34;ALL DONE!&#34;))</code></pre>
+</details>
+</dd>
+<dt id="gmag.sdss.get_random_galaxy"><code class="name flex">
+<span>def <span class="ident">get_random_galaxy</span></span>(<span>verbose=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get a random galaxy from SDSS</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Whether to print progress</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>galaxy</code></strong> :&ensp;<code>.Galaxy</code></dt>
+<dd>Galaxy object</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If not running in a notebook, must run in <code>__main__</code> to avoid multiprocessing issues</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_random_galaxy(verbose=True):
+    &#34;&#34;&#34;Get a random galaxy from SDSS
+
+    Parameters
+    ----------
+    verbose: `bool`, default=True
+        Whether to print progress
+
+    Returns
+    -------
+    galaxy: `.Galaxy`
+        Galaxy object
+
+    Notes
+    -----
+    If not running in a notebook, must run in `__main__` to avoid multiprocessing issues
+    &#34;&#34;&#34;
+
+    # Get a random galaxy objid
+    objid = __get_random_galaxy_objid()
+
+    # Get imaging data
+    imaging_data = __get_galaxy_imaging_data(objid)
+
+    pu.verbose_print(verbose, &#34;Fetching...&#34;, end=&#39;&#39;)
+
+    # Get jpg image
+    jpg_data = __get_galaxy_jpg_image(imaging_data[&#39;ra&#39;], imaging_data[&#39;dec&#39;], imaging_data[&#39;petroRad_r&#39;])
+
+    if verbose:
+        print(&#34;\rStill fetching ugriz data..., here is a preview:&#34;)
+        plt.figure(dpi=40)
+        plt.axis(&#39;off&#39;)
+        plt.imshow(jpg_data)
+        plt.show()
+
+    # Get fits images urls
+    fits_urls = [__get_url_from_imaging_data(imaging_data[&#39;run&#39;], imaging_data[&#39;camcol&#39;], imaging_data[&#39;field&#39;], band)
+                 for band in &#39;ugriz&#39;]
+
+    # Get cutout fits images data using multiprocessing
+    params = [(url, imaging_data[&#39;ra&#39;], imaging_data[&#39;dec&#39;], imaging_data[&#39;petroRad_r&#39;])
+              for url in fits_urls]
+    with Pool(5) as p:
+        cutout_images = p.starmap(__cutout_galaxy_fits_image, params)
+
+    galaxy = Galaxy(
+        objid=str(objid),
+        u=cutout_images[0],
+        g=cutout_images[1],
+        r=cutout_images[2],
+        i=cutout_images[3],
+        z=cutout_images[4],
+        jpg_data=jpg_data,
+        ra=imaging_data[&#39;ra&#39;],
+        dec=imaging_data[&#39;dec&#39;],
+    )
+
+    pu.verbose_print(verbose, &#34;Done!&#34;)
+
+    return galaxy</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gmag" href="index.html">gmag</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gmag.sdss.download_images" href="#gmag.sdss.download_images">download_images</a></code></li>
+<li><code><a title="gmag.sdss.get_random_galaxy" href="#gmag.sdss.get_random_galaxy">get_random_galaxy</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
