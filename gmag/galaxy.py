@@ -36,24 +36,18 @@ class Galaxy:
     def preview(self):
         """Show the preview jpg image of the galaxy with dpi=40"""
 
-        if self.jpg_data.size == 0:
-            raise ValueError("No jpg data found.")
-        else:
-            plt.figure(dpi=40)
-            plt.axis('off')
-            plt.imshow(self.jpg_data)
-            plt.show()
+        plt.figure(dpi=40)
+        plt.axis('off')
+        plt.imshow(self.jpg_data)
+        plt.show()
 
     def show(self):
         """Show the jpg image of the galaxy with dpi=100"""
 
-        if self.jpg_data.size == 0:
-            raise ValueError("No jpg data found.")
-        else:
-            plt.figure(dpi=100)
-            plt.axis('off')
-            plt.imshow(self.jpg_data)
-            plt.show()
+        plt.figure(dpi=100)
+        plt.axis('off')
+        plt.imshow(self.jpg_data)
+        plt.show()
 
     def show_band(self, band, cmap='viridis', high_contrast=False, colorbar=False):
         """Show a band of the galaxy image
@@ -64,9 +58,7 @@ class Galaxy:
         :param colorbar: whether to show the colorbar
         """
 
-        if self.jpg_data.size == 0:
-            raise ValueError("No jpg data found.")
-        elif band not in ['u', 'g', 'r', 'i', 'z']:
+        if band not in ['u', 'g', 'r', 'i', 'z']:
             raise ValueError(f"{band} is not a valid band. Please choose from u, g, r, i, z.")
         else:
             clim = None if not high_contrast else (np.percentile(getattr(self, band), 1),
@@ -86,18 +78,15 @@ class Galaxy:
         :param colorbar: whether to show the colorbar
         """
 
-        if self.jpg_data.size == 0:
-            raise ValueError("No jpg data found.")
-        else:
-            fig, axs = plt.subplots(1, 5, figsize=(15, 3))
-            for i, band in enumerate(['u', 'g', 'r', 'i', 'z']):
-                clim = None if not high_contrast else (np.percentile(self.data, 1),
-                                                       np.percentile(self.data, 99))
-                axs[i].imshow(getattr(self, band), cmap=cmap, clim=clim)
-                axs[i].set_title(f"{band}")
-                axs[i].axis('off')
+        fig, axs = plt.subplots(1, 5, figsize=(15, 3))
+        for i, band in enumerate(['u', 'g', 'r', 'i', 'z']):
+            clim = None if not high_contrast else (np.percentile(self.data, 1),
+                                                   np.percentile(self.data, 99))
+            axs[i].imshow(getattr(self, band), cmap=cmap, clim=clim)
+            axs[i].set_title(f"{band}")
+            axs[i].axis('off')
 
-            if colorbar:
-                fig.colorbar(axs[0].get_images()[0], ax=axs.ravel().tolist())
+        if colorbar:
+            fig.colorbar(axs[0].get_images()[0], ax=axs.ravel().tolist())
 
-            plt.show()
+        plt.show()
