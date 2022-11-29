@@ -99,7 +99,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     bands: `str`, default='ugriz'
         Bands to download
     max_search_radius: `float`, default=8
-        Maximum search radius in arcsec
+        Maximum search radius in arcmin
     cutout: `bool`, default=True
         Whether to cutout images
     name_col: `str`, default=None
