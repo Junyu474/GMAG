@@ -1,2 +1,2 @@
 # Exclude jupyter notebooks from github languages stats
-notebooks/** linguist-vendored
+*.ipynb linguist-documentation
