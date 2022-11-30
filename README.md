@@ -2,7 +2,7 @@
 
 _Give Me A Galaxy! | Fast SDSS Galaxy Image Download_
 
-[Documentation](https://junyu474.github.io/GMAG/gmag/index.html) | 
+[Documentation](https://junyu474.github.io/GMAG/index.html) | 
 [Notebooks](https://github.com/Junyu474/GMAG/tree/main/notebooks)
 
 ---
