@@ -1,3 +1,5 @@
+"""This module contains the Galaxy class, which is used to represent a galaxy"""
+
 from dataclasses import dataclass
 
 import numpy as np

@@ -1,3 +1,9 @@
+"""This module provides the main functionality to interact with the SDSS servers.
+
+Two functions are provided: `get_random_galaxy` and `download_images`.
+
+"""
+
 import bz2
 import csv
 import pathlib
