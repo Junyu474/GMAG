@@ -161,7 +161,8 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
     search_args = list(zip(orig_ra_list, orig_dec_list, [max_search_radius] * len(orig_ra_list)))
     with Pool(num_workers) as pool:
-        # galaxies is a list of tuples (ra, dec, objid, run, camcol, field), can be None, in order of original table
+        # galaxies is a list of dict (objid, run, camcol, field, ra, dec, petroRad_r, petroRadErr_r),
+        # can be None, in order of original table
         galaxies = list(tqdm(pool.imap(__search_nearby_galaxy_wrapper, search_args),
                              total=len(search_args), disable=not progress_bar,
                              desc="Searching galaxies", unit="obj"))
@@ -174,8 +175,8 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     if name_col is not None:
         try:
             names = table[name_col]
-            # Replace empty names with unknown_rowid
-            names = [name if name else f"unknown_rowid_{i}" for i, name in enumerate(names)]
+            # Replace empty names with rowid_unknown
+            names = [name if name else f"{i}_unknown" for i, name in enumerate(names)]
             # Check if names are unique
             if len(set(names)) != len(names):
                 raise ValueError()
