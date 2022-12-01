@@ -49,6 +49,23 @@ def blue(string):
     return "\033[94m{}\033[00m".format(string)
 
 
+def green(string):
+    """Return string in green
+
+    Parameters
+    ----------
+    string : `str`
+        String to return in green
+
+    Returns
+    -------
+    str
+        String in green
+    """
+
+    return "\033[92m{}\033[00m".format(string)
+
+
 def bold(string):
     """Return string in bold
 

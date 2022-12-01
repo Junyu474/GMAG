@@ -156,7 +156,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
     except KeyError:
         raise KeyError(f"Could not find ra column '{ra_col}' or dec column '{dec_col}' in file {file}")
 
-    pu.verbose_print(verbose, f"...Read {len(orig_ra_list)} galaxies from file {file}")
+    pu.verbose_print(verbose, f"...Read {len(orig_ra_list)} galaxies from file {pu.blue(file)}")
 
     # 4. Create search_args for multiprocessing, and search for galaxies, track progress by tqdm
     search_args = list(zip(orig_ra_list, orig_dec_list, [max_search_radius] * len(orig_ra_list)))
@@ -256,7 +256,7 @@ def download_images(file, ra_col='ra', dec_col='dec', bands='ugriz', max_search_
                         [orig_ra_list[i], orig_dec_list[i], True, gal['ra'], gal['dec'], names[i], gal['objid'],
                          cutout_shapes[i]])
 
-    pu.verbose_print(verbose, pu.bold(f"ALL DONE!"))
+    pu.verbose_print(verbose, pu.green(pu.bold(f"ALL DONE!")))  # TODO: refactor to use class method chaining
 
 
 def __get_random_galaxy_objid():
