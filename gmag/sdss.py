@@ -372,8 +372,13 @@ def __cutout_galaxy_fits_image(fits_file, ra, dec, petro_r):
 
     r = petro_r / 3600  # convert to degrees
 
-    # Read fits file
-    hdu = fits.open(fits_file, cache=False)
+    hdu = None
+    while True:
+        try:  # Read fits file
+            hdu = fits.open(fits_file, cache=False)
+            break
+        except TimeoutError:
+            continue
 
     # Read wcs, ignore warnings
     with warnings.catch_warnings():
